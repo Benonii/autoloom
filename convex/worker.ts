@@ -212,7 +212,10 @@ export const failJob = mutation({
     if (!job) return;
     await context.db.patch(jobID, { status: 'failed' });
     const video = await context.db.get(job.videoID);
-    if (video) await context.db.patch(job.videoID, { status: 'failed', errorMessage });
+    if (!video) return;
+    if (job.kind === 'launch')
+      await context.db.patch(job.videoID, { launchStatus: 'failed', launchErrorMessage: errorMessage });
+    else await context.db.patch(job.videoID, { status: 'failed', errorMessage });
   }
 });
 
@@ -223,5 +226,22 @@ export const heartbeat = mutation({
     const recorder = await context.db.query('recorders').first();
     if (recorder) await context.db.patch(recorder._id, { lastSeenAt: Date.now() });
     else await context.db.insert('recorders', { lastSeenAt: Date.now() });
+  }
+});
+
+export const finishLaunchJob = mutation({
+  args: { workerSecret: v.string(), jobID: v.id('jobs'), launchFileID: v.id('_storage') },
+  handler: async (context, { workerSecret, jobID, launchFileID }) => {
+    assertWorker(workerSecret);
+    const job = await context.db.get(jobID);
+    if (!job) return;
+    await context.db.patch(jobID, { status: 'done' });
+    const video = await context.db.get(job.videoID);
+    if (!video) {
+      await context.storage.delete(launchFileID);
+      return;
+    }
+    if (video.launchFileID) await context.storage.delete(video.launchFileID);
+    await context.db.patch(job.videoID, { launchStatus: 'ready', launchFileID, launchErrorMessage: undefined });
   }
 });

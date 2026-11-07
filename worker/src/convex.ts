@@ -105,6 +105,10 @@ export async function finishJob(jobID: string, videoFileID: Id<'_storage'>, dura
   });
 }
 
+export async function finishLaunchJob(jobID: string, launchFileID: Id<'_storage'>): Promise<void> {
+  await client.mutation(api.worker.finishLaunchJob, { workerSecret, jobID: jobID as Id<'jobs'>, launchFileID });
+}
+
 export async function failJob(jobID: string, errorMessage: string): Promise<void> {
   await client.mutation(api.worker.failJob, { workerSecret, jobID: jobID as Id<'jobs'>, errorMessage });
 }

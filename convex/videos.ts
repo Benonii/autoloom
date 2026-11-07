@@ -40,6 +40,7 @@ export function normalizeURL(appURL: string): string {
 export async function toPublicVideo(context: QueryCtx, video: Doc<'videos'>) {
   const videoURL = video.videoFileID ? await context.storage.getUrl(video.videoFileID) : null;
   const liveFrameURL = video.liveFrameFileID ? await context.storage.getUrl(video.liveFrameFileID) : null;
+  const launchURL = video.launchFileID ? await context.storage.getUrl(video.launchFileID) : null;
   return {
     id: video._id,
     title: video.title,
@@ -55,7 +56,10 @@ export async function toPublicVideo(context: QueryCtx, video: Doc<'videos'>) {
     hasUnrenderedEdits: video.hasUnrenderedEdits,
     updatedAt: video._creationTime,
     videoURL,
-    liveFrameURL
+    liveFrameURL,
+    launchStatus: video.launchStatus ?? null,
+    launchErrorMessage: video.launchErrorMessage ?? null,
+    launchURL
   };
 }
 
@@ -226,6 +230,19 @@ export async function giveHint(context: MutationCtx, deviceID: string, videoID: 
   await context.db.patch(videoID, { status: 'recording', hint: trimmedHint, stuckQuestion: undefined });
 }
 
+export async function startLaunchVideo(context: MutationCtx, deviceID: string, videoID: Id<'videos'>) {
+  const video = await readOwnedVideo(context, videoID, deviceID);
+  if (video.status !== 'ready') throw new ConvexError('Finish the walkthrough video first');
+  if (video.launchStatus === 'making') throw new ConvexError('The launch video is already being made');
+  await context.db.patch(videoID, { launchStatus: 'making', launchErrorMessage: undefined });
+  await context.db.insert('jobs', { videoID, kind: 'launch', status: 'queued' });
+}
+
+export const makeLaunchVideo = mutation({
+  args: { deviceID: v.string(), videoID: v.id('videos') },
+  handler: (context, { deviceID, videoID }) => startLaunchVideo(context, deviceID, videoID)
+});
+
 export const answerStuck = mutation({
   args: { deviceID: v.string(), videoID: v.id('videos'), hint: v.string() },
   handler: (context, { deviceID, videoID, hint }) => giveHint(context, deviceID, videoID, hint)
@@ -252,6 +269,7 @@ export const remove = mutation({
     await Promise.all(jobs.map((job) => context.db.delete(job._id)));
     if (video.videoFileID) await context.storage.delete(video.videoFileID);
     if (video.liveFrameFileID) await context.storage.delete(video.liveFrameFileID);
+    if (video.launchFileID) await context.storage.delete(video.launchFileID);
     await context.db.delete(videoID);
   }
 });

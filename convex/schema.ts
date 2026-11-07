@@ -14,7 +14,9 @@ export const stepKind = v.union(v.literal('navigate'), v.literal('click'), v.lit
 
 export const stepBox = v.object({ x: v.number(), y: v.number(), width: v.number(), height: v.number() });
 
-export const jobKind = v.union(v.literal('record'), v.literal('render'), v.literal('rerecord'));
+export const jobKind = v.union(v.literal('record'), v.literal('render'), v.literal('rerecord'), v.literal('launch'));
+
+export const launchStatus = v.union(v.literal('making'), v.literal('ready'), v.literal('failed'));
 
 export const jobStatus = v.union(v.literal('queued'), v.literal('running'), v.literal('done'), v.literal('failed'));
 
@@ -35,7 +37,10 @@ export default defineSchema({
     hint: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
     hasUnrenderedEdits: v.boolean(),
-    loginToken: v.optional(v.string())
+    loginToken: v.optional(v.string()),
+    launchStatus: v.optional(launchStatus),
+    launchFileID: v.optional(v.id('_storage')),
+    launchErrorMessage: v.optional(v.string())
   }).index('by_device', ['deviceID']),
   agentKeys: defineTable({
     deviceID: v.string(),

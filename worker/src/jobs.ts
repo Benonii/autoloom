@@ -5,6 +5,7 @@ import { stripVTControlCharacters } from 'node:util';
 import {
   failJob,
   finishJob,
+  finishLaunchJob,
   markRendering,
   openCredentials,
   readStepIDs,
@@ -13,6 +14,8 @@ import {
 } from '@worker/convex';
 import { environment } from '@worker/environment';
 import { explore } from '@worker/explore';
+import { renderLaunch } from '@worker/launch';
+import { writeLaunchCopy } from '@worker/launchCopy';
 import { renderWalkthrough } from '@worker/render';
 import { recordTake } from '@worker/replay';
 import { narrate } from '@worker/voice';
@@ -75,12 +78,26 @@ async function produceVideo(
   await finishJob(job.jobID, videoFileID, Math.round(totalSeconds));
 }
 
+async function produceLaunchVideo(job: ClaimedJob, steps: PlannedStep[], credentials: Credentials | null) {
+  const directory = path.join(environment.outputDirectory, job.video.id);
+  await mkdir(directory, { recursive: true });
+  const savedTake = await readSavedTake(directory, steps.length);
+  const take = savedTake ?? (await recordTake(job.video.appURL, steps, credentials, directory));
+  if (!savedTake) await writeFile(path.join(directory, 'take.json'), JSON.stringify(take, null, 2));
+  const copy = await writeLaunchCopy(job.video.goal, steps);
+  const outputPath = await renderLaunch(take, copy, job.video.appURL, directory);
+  const launchFileID = await uploadFile(outputPath, 'video/mp4');
+  await finishLaunchJob(job.jobID, launchFileID);
+}
+
 export async function runJob(job: ClaimedJob): Promise<void> {
   const startedAt = Date.now();
   console.log(`Job ${job.kind} for ${job.video.appURL}: ${job.video.goal}`);
   try {
     const credentials = job.video.hasCredentials ? await openCredentials(job.video.id) : null;
-    if (job.kind === 'render') {
+    if (job.kind === 'launch') {
+      await produceLaunchVideo(job, job.steps.map(toPlannedStep), credentials);
+    } else if (job.kind === 'render') {
       await produceVideo(job, job.steps.map(toPlannedStep), credentials, false);
     } else {
       const knownSteps = job.kind === 'rerecord' ? job.steps.map(toPlannedStep) : [];

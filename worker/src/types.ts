@@ -40,7 +40,7 @@ export interface JobStep {
 
 export interface ClaimedJob {
   jobID: string;
-  kind: 'record' | 'render' | 'rerecord';
+  kind: 'record' | 'render' | 'rerecord' | 'launch';
   video: JobVideo;
   steps: JobStep[];
 }
@@ -111,4 +111,28 @@ export type WalkthroughProps = {
   viewport: { width: number; height: number };
   segments: WalkthroughSegment[];
   totalSeconds: number;
+};
+
+export interface LaunchCopy {
+  headline: string;
+  closingLine: string;
+  scenes: { stepIndex: number; caption: string }[];
+}
+
+export interface LaunchScene {
+  caption: string;
+  takeStartSeconds: number;
+  takeEndSeconds: number;
+  box: StepBox | null;
+}
+
+export type LaunchProps = {
+  takeFile: string;
+  musicFile: string | null;
+  viewport: { width: number; height: number };
+  hostname: string;
+  headline: string;
+  closingLine: string;
+  scenes: LaunchScene[];
+  finalFrameSeconds: number;
 };

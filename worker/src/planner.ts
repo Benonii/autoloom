@@ -82,7 +82,7 @@ export async function decideNextStep(input: PlannerInput): Promise<PlannerDecisi
   return decisionSchema.parse(JSON.parse(readFirstJSONObject(readFirstOutputText(response))));
 }
 
-function readFirstOutputText(response: OpenAI.Responses.Response): string {
+export function readFirstOutputText(response: OpenAI.Responses.Response): string {
   for (const item of response.output) {
     if (item.type !== 'message') continue;
     for (const content of item.content) {
@@ -92,7 +92,7 @@ function readFirstOutputText(response: OpenAI.Responses.Response): string {
   return response.output_text;
 }
 
-function readFirstJSONObject(text: string): string {
+export function readFirstJSONObject(text: string): string {
   const start = text.indexOf('{');
   if (start < 0) throw new Error('The planner did not return a decision');
   let depth = 0;
