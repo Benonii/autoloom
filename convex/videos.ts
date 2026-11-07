@@ -145,7 +145,24 @@ export const listMine = query({
       .withIndex('by_device', (index) => index.eq('deviceID', deviceID))
       .order('desc')
       .take(50);
-    return Promise.all(videos.map((video) => toPublicVideo(context, video)));
+    const queuedJobs = await context.db
+      .query('jobs')
+      .withIndex('by_status', (index) => index.eq('status', 'queued'))
+      .collect();
+    const runningJob = await context.db
+      .query('jobs')
+      .withIndex('by_status', (index) => index.eq('status', 'running'))
+      .first();
+    const runningCount = runningJob ? 1 : 0;
+    return Promise.all(
+      videos.map(async (video) => {
+        const jobIndex = queuedJobs.findIndex((job) => job.videoID === video._id);
+        return {
+          ...(await toPublicVideo(context, video)),
+          videosAhead: jobIndex >= 0 ? jobIndex + runningCount : null
+        };
+      })
+    );
   }
 });
 
