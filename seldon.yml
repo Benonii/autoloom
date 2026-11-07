@@ -6,6 +6,7 @@ run:
 testCases:
   - name: Create a narrated video from a link and a goal
     id: create-video
+    only: true
     url: /
     steps:
       - in App link, enter https://autoloom-app.vercel.app/ledgerly
@@ -20,6 +21,7 @@ testCases:
 
   - name: Login password is never shown
     id: password-never-shown
+    only: true
     url: /
     steps:
       - in App link, enter https://autoloom-app.vercel.app/ledgerly
@@ -87,6 +89,7 @@ testCases:
 
   - name: Invalid input shows a clear error
     id: invalid-input
+    only: true
     url: /
     steps:
       - in App link, enter not a link
