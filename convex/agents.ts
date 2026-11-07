@@ -3,7 +3,15 @@ import { ConvexError, v } from 'convex/values';
 import { internal } from './_generated/api';
 import { action, internalMutation, internalQuery, mutation, query } from './_generated/server';
 import { readOwnedVideo } from './access';
-import { editNarration, giveHint, maximumGoalLength, normalizeURL, startRender, toPublicVideo } from './videos';
+import {
+  canTakeLogin,
+  editNarration,
+  giveHint,
+  maximumGoalLength,
+  normalizeURL,
+  startRender,
+  toPublicVideo
+} from './videos';
 
 import type { Id } from './_generated/dataModel';
 import type { QueryCtx } from './_generated/server';
@@ -190,5 +198,21 @@ export const rerender = mutation({
     }).catch((error) => {
       throw toReadableError(error);
     });
+  }
+});
+
+export const requestLogin = mutation({
+  args: { agentKey: v.string(), videoID: v.string() },
+  handler: async (context, args) => {
+    const deviceID = await readDevice(context, args.agentKey);
+    const videoID = readVideoID(context, args.videoID);
+    const video = await readOwnedVideo(context, videoID, deviceID).catch(() => {
+      throw new ConvexError('Video not found');
+    });
+    if (!canTakeLogin(video.status))
+      throw new ConvexError('Wait until the recorder is stuck, failed, or done before adding a login');
+    const loginToken = createSecret();
+    await context.db.patch(videoID, { loginToken });
+    return loginToken;
   }
 });

@@ -96,7 +96,7 @@ function describeProgress(progress: Progress, place: QueuePlace, origin: string)
   }
   if (video.status === 'stuck') {
     return {
-      text: `The recorder is stuck and asks: "${video.stuckQuestion}"${stepText}\n\nAsk the user this question in your own words, then pass their answer to answer_question.`,
+      text: `The recorder is stuck and asks: "${video.stuckQuestion}"${stepText}\n\nIf the question is about signing in, a login, or a password, call request_login and give the user the secure link; never ask for or pass passwords yourself. Otherwise ask the user this question in your own words, then pass their answer to answer_question.`,
       data: { ...data, question: video.stuckQuestion }
     };
   }
@@ -130,7 +130,7 @@ const recordVideo: Tool = {
   name: 'record_video',
   title: 'Record a walkthrough video',
   description:
-    'Records a narrated walkthrough video of a web app. An AI agent opens the link, clicks through the flow, and Autoloom turns it into a video with zooms, captions, chapters and a voiceover. Before calling, make sure you know three things, and ask the user for any that are missing in one short message: the app link, the exact flow to show (one task, like "create and send an invoice"), and whether the app needs a login. Never ask for passwords in chat: set needs_login and give the user the secure login link this tool returns. After calling, keep calling get_progress until the video is ready.',
+    'Records a narrated walkthrough video of a web app. An AI agent opens the link, clicks through the flow, and Autoloom turns it into a video with zooms, captions, chapters and a voiceover. Before calling, make sure you know three things, and ask the user for any that are missing in one short message: the app link, the exact flow to show (one task, like "create and send an invoice"), and whether the app needs a login. Never ask for passwords in chat: set needs_login and give the user the secure login link this tool returns. If unsure whether it needs a login, set needs_login to true. After calling, keep calling get_progress until the video is ready.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -213,6 +213,23 @@ const answerQuestion: Tool = {
   }
 };
 
+const requestLogin: Tool = {
+  name: 'request_login',
+  title: 'Ask for a test login',
+  description:
+    'Makes a one-time secure link where the user types a test login for the app. Use it when the recorder is stuck on a sign-in page, when a recording failed because it could not sign in, or when the user says the app needs a login. When the user submits the link, recording restarts from the beginning with the login. Never accept passwords in chat: if the user pastes one, tell them it was not used and give them this link instead.',
+  inputSchema: { type: 'object', properties: { video_id: videoIDProperty }, required: ['video_id'] },
+  run: async (input, { agentKey, origin }) => {
+    const videoID = readString(input, 'video_id');
+    const loginToken = await fetchMutation(api.agents.requestLogin, { agentKey, videoID });
+    const loginURL = `${origin}/login/${videoID}?token=${loginToken}`;
+    return {
+      text: `Secure login link: ${loginURL}\n\nGive the user this link. Recording restarts with the login as soon as they submit it. Then call get_progress.`,
+      data: { video_id: videoID, login_url: loginURL }
+    };
+  }
+};
+
 const editScriptLine: Tool = {
   name: 'edit_script_line',
   title: 'Change a script line',
@@ -291,7 +308,15 @@ const listVideos: Tool = {
   }
 };
 
-export const tools: Tool[] = [recordVideo, getProgress, answerQuestion, editScriptLine, rerenderVideo, listVideos];
+export const tools: Tool[] = [
+  recordVideo,
+  getProgress,
+  answerQuestion,
+  requestLogin,
+  editScriptLine,
+  rerenderVideo,
+  listVideos
+];
 
 export const serverInstructions =
-  'Autoloom records narrated walkthrough videos of web apps. When the user asks for a video of a flow: 1) ask in one message for anything missing (app link, the exact flow, whether it needs a login), 2) call record_video, 3) if it returns a secure login link, give it to the user and never ask for passwords in chat, 4) call get_progress again and again, giving the user one short line about what the recorder just did, 5) if the recorder is stuck, ask the user its question and call answer_question, 6) when ready, give the user the share link and offer script edits.';
+  'Autoloom records narrated walkthrough videos of web apps. When the user asks for a video of a flow: 1) ask in one message for anything missing (app link, the exact flow, whether it needs a login), 2) call record_video, 3) if it returns a secure login link, give it to the user and never ask for passwords in chat, 4) call get_progress again and again, giving the user one short line about what the recorder just did, 5) if the recorder is stuck, ask the user its question and call answer_question, unless it is stuck on signing in: then call request_login and give the user the secure link, 6) when ready, give the user the share link and offer script edits.';

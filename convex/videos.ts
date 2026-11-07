@@ -256,6 +256,12 @@ export const remove = mutation({
   }
 });
 
+const loginStatuses = new Set<Doc<'videos'>['status']>(['waitingForLogin', 'stuck', 'failed', 'ready']);
+
+export function canTakeLogin(status: Doc<'videos'>['status']): boolean {
+  return loginStatuses.has(status);
+}
+
 export const readLoginRequest = query({
   args: { videoID: v.string(), loginToken: v.string() },
   handler: async (context, args) => {
@@ -263,7 +269,7 @@ export const readLoginRequest = query({
     if (!videoID) return null;
     const video = await context.db.get(videoID);
     if (!video) return null;
-    const isOpen = video.status === 'waitingForLogin' && video.loginToken === args.loginToken;
+    const isOpen = canTakeLogin(video.status) && video.loginToken === args.loginToken;
     return { title: video.title, appURL: video.appURL, isOpen };
   }
 });
@@ -288,14 +294,35 @@ export const attachLogin = internalMutation({
   handler: async (context, args) => {
     const videoID = context.db.normalizeId('videos', args.videoID);
     const video = videoID ? await context.db.get(videoID) : null;
-    if (!videoID || !video || video.status !== 'waitingForLogin' || video.loginToken !== args.loginToken)
+    if (!videoID || !video || !canTakeLogin(video.status) || video.loginToken !== args.loginToken)
       throw new ConvexError('This login link has already been used or is not valid');
+    const oldCredentials = await context.db
+      .query('credentials')
+      .withIndex('by_video', (index) => index.eq('videoID', videoID))
+      .collect();
+    await Promise.all(oldCredentials.map((credential) => context.db.delete(credential._id)));
     await context.db.insert('credentials', {
       videoID,
       sealedEmail: args.sealedEmail,
       sealedPassword: args.sealedPassword
     });
-    await context.db.patch(videoID, { status: 'recording', hasCredentials: true, loginToken: undefined });
+    const openJobs = await context.db
+      .query('jobs')
+      .withIndex('by_video', (index) => index.eq('videoID', videoID))
+      .collect();
+    await Promise.all(
+      openJobs
+        .filter((job) => job.status === 'queued' || job.status === 'running')
+        .map((job) => context.db.patch(job._id, { status: 'failed' }))
+    );
+    await context.db.patch(videoID, {
+      status: 'recording',
+      hasCredentials: true,
+      loginToken: undefined,
+      hint: undefined,
+      stuckQuestion: undefined,
+      errorMessage: undefined
+    });
     await context.db.insert('jobs', { videoID, kind: 'record', status: 'queued' });
   }
 });

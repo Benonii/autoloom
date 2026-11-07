@@ -165,6 +165,12 @@ export const readHint = query({
     assertWorker(workerSecret);
     const video = await context.db.get(videoID);
     if (!video) throw new Error('This video was deleted');
+    const runningJob = await context.db
+      .query('jobs')
+      .withIndex('by_video', (index) => index.eq('videoID', videoID))
+      .filter((query) => query.eq(query.field('status'), 'running'))
+      .first();
+    if (!runningJob) throw new Error('This recording was restarted');
     return video.status === 'recording' ? (video.hint ?? null) : null;
   }
 });
@@ -189,7 +195,7 @@ export const finishJob = mutation({
   handler: async (context, { workerSecret, jobID, videoFileID, durationSeconds }) => {
     assertWorker(workerSecret);
     const job = await context.db.get(jobID);
-    if (!job) return;
+    if (!job || job.status !== 'running') return;
     const video = await context.db.get(job.videoID);
     if (!video) return;
     if (video.videoFileID) await context.storage.delete(video.videoFileID);
@@ -210,7 +216,7 @@ export const failJob = mutation({
   handler: async (context, { workerSecret, jobID, errorMessage }) => {
     assertWorker(workerSecret);
     const job = await context.db.get(jobID);
-    if (!job) return;
+    if (!job || job.status !== 'running') return;
     await context.db.patch(jobID, { status: 'failed' });
     const video = await context.db.get(job.videoID);
     if (video) await context.db.patch(job.videoID, { status: 'failed', errorMessage: toFriendlyFailure(errorMessage) });
