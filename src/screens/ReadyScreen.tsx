@@ -60,8 +60,8 @@ export function ReadyScreen({ video, steps }: VideoScreenProps) {
     <AppShell>
       <div className='mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between'>
         <div>
-          <h1 className='text-[1.75rem] font-bold leading-[1.1] tracking-[-0.03em] sm:text-5xl'>{video.title}</h1>
-          <p className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground sm:text-base'>
+          <h1 className='text-xl font-bold leading-[1.1] tracking-[-0.03em] sm:text-3xl'>{video.title}</h1>
+          <p className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground sm:text-sm'>
             <span className='flex items-center gap-1.5'>
               <Globe className='size-4' />
               {readHostname(video.appURL)}
@@ -92,7 +92,7 @@ export function ReadyScreen({ video, steps }: VideoScreenProps) {
           className='mb-6 flex flex-col gap-1 rounded-2xl bg-tint p-4 text-tint-foreground sm:flex-row sm:items-center sm:gap-6'
         >
           <p className='font-bold'>Re-rendering with your changes</p>
-          <p className='text-sm'>Your share link keeps the old version until it’s done.</p>
+          <p className='text-xs'>Your share link keeps the old version until it’s done.</p>
         </div>
       )}
       <div className='grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]'>
@@ -108,7 +108,7 @@ export function ReadyScreen({ video, steps }: VideoScreenProps) {
           />
         </div>
         <section aria-labelledby='chapters'>
-          <h2 id='chapters' className='mb-2 px-3 text-lg font-bold'>
+          <h2 id='chapters' className='mb-2 px-3 text-sm font-bold'>
             Chapters
           </h2>
           <ChapterList steps={steps} activeStepID={activeStepID} onSelect={seekTo} />
@@ -116,11 +116,11 @@ export function ReadyScreen({ video, steps }: VideoScreenProps) {
       </div>
       <section aria-labelledby='script' className='mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]'>
         <div>
-          <h2 id='script' className='flex items-center gap-2 text-xl font-bold sm:text-2xl'>
+          <h2 id='script' className='flex items-center gap-2 text-base font-bold sm:text-lg'>
             <ScrollText className='size-5 text-primary' />
             Script
           </h2>
-          <p className='mb-4 mt-1 text-[0.95rem] text-muted-foreground'>
+          <p className='mb-4 mt-1 text-[0.85rem] text-muted-foreground'>
             Edit any line and re-render. Nothing gets recorded again.
           </p>
           <ScriptEditor steps={steps} isDisabled={isRendering} />
@@ -134,15 +134,15 @@ export function ReadyScreen({ video, steps }: VideoScreenProps) {
                 onCheckedChange={setVoiceoverEnabled}
                 disabled={isRendering}
               />
-              <Label htmlFor='voiceover' className='text-base'>
+              <Label htmlFor='voiceover' className='text-sm'>
                 Voiceover
               </Label>
             </div>
             <VoicePicker value={voiceID} onChange={setVoiceID} isDisabled={isRendering || !voiceoverEnabled} />
-            <p className='text-sm text-muted-foreground'>Off gives you captions only.</p>
+            <p className='text-xs text-muted-foreground'>Off gives you captions only.</p>
           </div>
           {errorMessage && (
-            <p role='alert' className='text-sm font-semibold text-destructive'>
+            <p role='alert' className='text-xs font-semibold text-destructive'>
               {errorMessage}
             </p>
           )}

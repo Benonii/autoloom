@@ -63,10 +63,10 @@ export function CreateScreen() {
           <span className='mb-4 grid size-10 place-items-center rounded-2xl bg-white/15 backdrop-blur-sm sm:size-12'>
             <Clapperboard className='size-5 sm:size-6' />
           </span>
-          <h1 className='text-balance text-[1.75rem] font-bold leading-[1.1] tracking-[-0.03em] sm:text-5xl'>
+          <h1 className='text-balance text-xl font-bold leading-[1.1] tracking-[-0.03em] sm:text-3xl'>
             What should we show?
           </h1>
-          <p className='mt-3 max-w-md text-[0.95rem] leading-relaxed text-white/85 sm:text-lg'>
+          <p className='mt-3 max-w-md text-[0.85rem] leading-relaxed text-white/85 sm:text-sm'>
             Paste your app’s link and say what to demo. An agent clicks through it and hands you a narrated video.
           </p>
         </section>
@@ -75,7 +75,7 @@ export function CreateScreen() {
           className='relative -mt-10 mx-2 flex flex-col gap-5 rounded-3xl border bg-card p-4 shadow-[0_20px_40px_-28px_rgb(24_24_27/0.45)] sm:-mt-14 sm:mx-6 sm:gap-6 sm:p-7'
         >
           <Field>
-            <FieldLabel className='font-bold sm:text-base'>
+            <FieldLabel className='font-bold sm:text-sm'>
               <Link2 className='size-4 text-primary' />
               App link
             </FieldLabel>
@@ -87,11 +87,11 @@ export function CreateScreen() {
               placeholder='https://your-app.com'
               value={appURL}
               onChange={(event) => setAppURL(event.target.value)}
-              className='*:text-base sm:*:h-12 sm:*:text-lg'
+              className='*:text-sm sm:*:h-12 sm:*:text-sm'
             />
           </Field>
           <Field>
-            <FieldLabel className='font-bold sm:text-base'>
+            <FieldLabel className='font-bold sm:text-sm'>
               <Target className='size-4 text-primary' />
               What should it show?
             </FieldLabel>
@@ -101,12 +101,12 @@ export function CreateScreen() {
               placeholder='Show how to invite a teammate'
               value={goal}
               onChange={(event) => setGoal(event.target.value)}
-              className='*:min-h-20 *:text-base sm:*:text-lg'
+              className='*:min-h-20 *:text-sm sm:*:text-sm'
             />
             <FieldDescription>One task works best, like “invite a teammate”.</FieldDescription>
           </Field>
           <Collapsible className='rounded-2xl border'>
-            <CollapsibleTrigger className='flex w-full items-center gap-3 px-4 py-3 text-left text-[0.95rem] font-semibold [&[data-panel-open]>svg:last-child]:rotate-180'>
+            <CollapsibleTrigger className='flex w-full items-center gap-3 px-4 py-3 text-left text-[0.85rem] font-semibold [&[data-panel-open]>svg:last-child]:rotate-180'>
               <KeyRound className='size-4 text-muted-foreground' />
               <span className='flex-1'>Needs a login?</span>
               <ChevronDown className='size-4 text-muted-foreground transition-transform duration-200' />
@@ -133,7 +133,7 @@ export function CreateScreen() {
                     onChange={(event) => setPassword(event.target.value)}
                   />
                 </Field>
-                <p className='text-sm leading-relaxed text-muted-foreground sm:col-span-2'>
+                <p className='text-xs leading-relaxed text-muted-foreground sm:col-span-2'>
                   The AI never sees your password. It is stored encrypted, typed in for the agent, and never shown in
                   the video.
                 </p>
@@ -141,10 +141,10 @@ export function CreateScreen() {
             </CollapsiblePanel>
           </Collapsible>
           <div className='flex flex-col gap-3 rounded-2xl bg-muted p-3.5 sm:flex-row sm:items-center sm:p-4'>
-            <div className='flex flex-1 items-center gap-3 text-[0.95rem] font-semibold'>
+            <div className='flex flex-1 items-center gap-3 text-[0.85rem] font-semibold'>
               <Switch id='voiceover' checked={voiceoverEnabled} onCheckedChange={setVoiceoverEnabled} />
               <Mic className='size-4 text-muted-foreground' />
-              <Label htmlFor='voiceover' className='text-[0.95rem]'>
+              <Label htmlFor='voiceover' className='text-[0.85rem]'>
                 Voiceover
               </Label>
             </div>
@@ -153,7 +153,7 @@ export function CreateScreen() {
           {errorMessage && (
             <p
               role='alert'
-              className='rounded-2xl bg-[#fff1e8] px-4 py-3 text-[0.95rem] font-semibold text-destructive'
+              className='rounded-2xl bg-[#fff1e8] px-4 py-3 text-[0.85rem] font-semibold text-destructive'
             >
               {errorMessage}
             </p>
@@ -162,7 +162,7 @@ export function CreateScreen() {
             type='submit'
             size='xl'
             disabled={isSubmitting || !deviceID}
-            className='h-12 rounded-2xl text-base font-bold sm:text-lg'
+            className='h-12 rounded-2xl text-sm font-bold sm:text-sm'
           >
             {isSubmitting ? 'Starting' : 'Record video'}
           </Button>

@@ -25,7 +25,7 @@ export function LibraryScreen() {
   return (
     <AppShell isCreateHidden>
       <div className='mb-8 flex flex-wrap items-end justify-between gap-4 sm:mb-10'>
-        <h1 className='text-[1.75rem] font-bold leading-[1.1] tracking-[-0.03em] sm:text-5xl'>Your videos</h1>
+        <h1 className='text-xl font-bold leading-[1.1] tracking-[-0.03em] sm:text-3xl'>Your videos</h1>
         <Button size='xl' className='rounded-2xl font-bold' render={<a href='/' />}>
           <Plus />
           New video
@@ -45,7 +45,7 @@ export function LibraryScreen() {
                   className='flex flex-col gap-1 p-4 transition-colors hover:bg-muted sm:p-5'
                 >
                   <span className='flex flex-wrap items-center gap-2'>
-                    <span className='text-lg font-bold sm:text-xl'>{video.title}</span>
+                    <span className='text-sm font-bold sm:text-base'>{video.title}</span>
                     {statusLabel && (
                       <Badge
                         variant={
@@ -59,7 +59,7 @@ export function LibraryScreen() {
                       </Badge>
                     )}
                   </span>
-                  <span className='flex items-center gap-1.5 text-sm text-muted-foreground'>
+                  <span className='flex items-center gap-1.5 text-xs text-muted-foreground'>
                     <Clock className='size-3.5' />
                     {video.durationSeconds ? formatTimestamp(video.durationSeconds) : 'Not ready'},{' '}
                     {readHostname(video.appURL)}

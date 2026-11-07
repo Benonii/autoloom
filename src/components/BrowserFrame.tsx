@@ -29,7 +29,7 @@ export function BrowserFrame({ url, isLive = false, children, className }: Brows
           <span className='truncate'>{url}</span>
         </div>
         {isLive && (
-          <span className='flex shrink-0 items-center gap-2 rounded-full bg-foreground px-3 py-1 text-sm font-bold text-white'>
+          <span className='flex shrink-0 items-center gap-2 rounded-full bg-foreground px-3 py-1 text-xs font-bold text-white'>
             <span className='size-2 rounded-full bg-glow animate-[live-pulse_1.6s_ease-in-out_infinite]' />
             Live
           </span>
