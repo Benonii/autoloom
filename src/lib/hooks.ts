@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 const reducedMotionQuery = '(prefers-reduced-motion: reduce)';
 const deviceIDStorageKey = 'autoloom-device-id';
@@ -50,4 +50,13 @@ function readServerDeviceID(): string {
 
 export function useDeviceID(): string {
   return useSyncExternalStore(subscribeToNothing, readCachedDeviceID, readServerDeviceID);
+}
+
+export function useNow(intervalMilliseconds: number): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), intervalMilliseconds);
+    return () => clearInterval(timer);
+  }, [intervalMilliseconds]);
+  return now;
 }

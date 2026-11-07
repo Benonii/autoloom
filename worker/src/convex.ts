@@ -13,6 +13,10 @@ const workerSecret = environment.workerSecret;
 
 export { api };
 
+export async function sendHeartbeat(): Promise<void> {
+  await client.mutation(api.worker.heartbeat, { workerSecret });
+}
+
 export async function claimJob(jobID: string): Promise<ClaimedJob | null> {
   return (await client.mutation(api.worker.claimJob, {
     workerSecret,

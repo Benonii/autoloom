@@ -9,6 +9,7 @@
  */
 
 import type * as access from "../access.js";
+import type * as queue from "../queue.js";
 import type * as sealing from "../sealing.js";
 import type * as steps from "../steps.js";
 import type * as videos from "../videos.js";
@@ -22,6 +23,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   access: typeof access;
+  queue: typeof queue;
   sealing: typeof sealing;
   steps: typeof steps;
   videos: typeof videos;

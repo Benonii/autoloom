@@ -209,3 +209,13 @@ export const failJob = mutation({
     await context.db.patch(jobID, { status: 'failed' });
   }
 });
+
+export const heartbeat = mutation({
+  args: { workerSecret: v.string() },
+  handler: async (context, { workerSecret }) => {
+    assertWorker(workerSecret);
+    const recorder = await context.db.query('recorders').first();
+    if (recorder) await context.db.patch(recorder._id, { lastSeenAt: Date.now() });
+    else await context.db.insert('recorders', { lastSeenAt: Date.now() });
+  }
+});

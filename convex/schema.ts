@@ -53,6 +53,9 @@ export default defineSchema({
     status: jobStatus,
     claimedAt: v.optional(v.number())
   }).index('by_status', ['status']),
+  recorders: defineTable({
+    lastSeenAt: v.number()
+  }),
   credentials: defineTable({
     videoID: v.id('videos'),
     sealedEmail: v.string(),

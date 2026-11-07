@@ -1,3 +1,5 @@
+import { ConvexError } from 'convex/values';
+
 import type { Doc, Id } from './_generated/dataModel';
 import type { QueryCtx } from './_generated/server';
 
@@ -12,6 +14,6 @@ export async function readOwnedVideo(
   deviceID: string
 ): Promise<Doc<'videos'>> {
   const video = await context.db.get(videoID);
-  if (!video || video.deviceID !== deviceID) throw new Error('Video not found');
+  if (!video || video.deviceID !== deviceID) throw new ConvexError('Video not found');
   return video;
 }

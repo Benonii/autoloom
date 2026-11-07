@@ -1,4 +1,4 @@
-import { v } from 'convex/values';
+import { ConvexError, v } from 'convex/values';
 
 import { internal } from './_generated/api';
 import { action, internalMutation, mutation, query } from './_generated/server';
@@ -16,11 +16,20 @@ function readTitle(goal: string): string {
   return title.length > 60 ? `${title.slice(0, 57)}...` : title;
 }
 
+function readURL(text: string): URL | null {
+  try {
+    return new URL(text);
+  } catch {
+    return null;
+  }
+}
+
 function normalizeURL(appURL: string): string {
-  const withProtocol = /^https?:\/\//i.test(appURL.trim()) ? appURL.trim() : `https://${appURL.trim()}`;
-  const parsed = new URL(withProtocol);
-  if (!parsed.hostname.includes('.') && parsed.hostname !== 'localhost')
-    throw new Error('Enter a full web address, like acme.com');
+  const trimmedURL = appURL.trim();
+  const withProtocol = /^https?:\/\//i.test(trimmedURL) ? trimmedURL : `https://${trimmedURL}`;
+  const parsed = readURL(withProtocol);
+  if (!parsed || /\s/.test(trimmedURL) || (!parsed.hostname.includes('.') && parsed.hostname !== 'localhost'))
+    throw new ConvexError('Enter a full web address, like acme.com');
   return parsed.toString();
 }
 
@@ -58,8 +67,8 @@ export const create = action({
   },
   handler: async (context, args): Promise<Id<'videos'>> => {
     const goal = args.goal.trim();
-    if (goal.length === 0) throw new Error('Tell us what the video should show');
-    if (goal.length > maximumGoalLength) throw new Error('Keep the goal under 500 characters');
+    if (goal.length === 0) throw new ConvexError('Tell us what the video should show');
+    if (goal.length > maximumGoalLength) throw new ConvexError('Keep the goal under 500 characters');
     const appURL = normalizeURL(args.appURL);
     const hasCredentials = Boolean(args.email && args.password);
     const sealedEmail = hasCredentials && args.email ? await seal(args.email) : undefined;
@@ -148,10 +157,10 @@ export const updateNarration = mutation({
   args: { deviceID: v.string(), stepID: v.id('steps'), narration: v.string() },
   handler: async (context, { deviceID, stepID, narration }) => {
     const step = await context.db.get(stepID);
-    if (!step) throw new Error('Step not found');
+    if (!step) throw new ConvexError('Step not found');
     await readOwnedVideo(context, step.videoID, deviceID);
     const trimmedNarration = narration.trim();
-    if (trimmedNarration.length === 0) throw new Error('Narration cannot be empty');
+    if (trimmedNarration.length === 0) throw new ConvexError('Narration cannot be empty');
     if (trimmedNarration === step.narration) return;
     await context.db.patch(stepID, { narration: trimmedNarration });
     await context.db.patch(step.videoID, { hasUnrenderedEdits: true });
@@ -168,7 +177,7 @@ export const rerender = mutation({
   handler: async (context, { deviceID, videoID, voiceoverEnabled, voiceID }) => {
     const video = await readOwnedVideo(context, videoID, deviceID);
     if (video.status === 'recording' || video.status === 'rendering')
-      throw new Error('This video is already being made');
+      throw new ConvexError('This video is already being made');
     await context.db.patch(videoID, {
       status: 'rendering',
       hasUnrenderedEdits: false,
@@ -184,7 +193,7 @@ export const rerecord = mutation({
   handler: async (context, { deviceID, videoID }) => {
     const video = await readOwnedVideo(context, videoID, deviceID);
     if (video.status === 'recording' || video.status === 'rendering')
-      throw new Error('This video is already being made');
+      throw new ConvexError('This video is already being made');
     await context.db.patch(videoID, { status: 'recording', hasUnrenderedEdits: false });
     await context.db.insert('jobs', { videoID, kind: 'rerecord', status: 'queued' });
   }
@@ -196,7 +205,7 @@ export const answerStuck = mutation({
     const video = await readOwnedVideo(context, videoID, deviceID);
     if (video.status !== 'stuck') return;
     const trimmedHint = hint.trim();
-    if (trimmedHint.length === 0) throw new Error('Add a hint so the agent knows what to try');
+    if (trimmedHint.length === 0) throw new ConvexError('Add a hint so the agent knows what to try');
     await context.db.patch(videoID, { status: 'recording', hint: trimmedHint, stuckQuestion: undefined });
   }
 });

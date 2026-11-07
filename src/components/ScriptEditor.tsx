@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { StepKindIcon } from '@/components/StepKindIcon';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/convexApi';
+import { readErrorMessage } from '@/lib/errors';
 import { useDeviceID } from '@/lib/hooks';
 import { formatTimestamp } from '@/lib/steps';
 import { cn } from '@/lib/utils';
@@ -43,7 +44,7 @@ function ScriptLine({ step, isDisabled }: ScriptLineProps) {
       await updateNarration({ deviceID, stepID: step.id, narration: draft });
       setErrorMessage(null);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Could not save this line');
+      setErrorMessage(readErrorMessage(error));
     }
   }
 

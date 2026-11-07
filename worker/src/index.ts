@@ -1,4 +1,4 @@
-import { api, claimJob, liveClient } from '@worker/convex';
+import { api, claimJob, liveClient, sendHeartbeat } from '@worker/convex';
 import { environment } from '@worker/environment';
 import { runJob } from '@worker/jobs';
 
@@ -25,5 +25,14 @@ async function work(jobID: string): Promise<void> {
 liveClient.onUpdate(api.worker.nextJob, { workerSecret: environment.workerSecret }, (job) => {
   if (job) void work(job.id);
 });
+
+const heartbeatMilliseconds = 15_000;
+
+function beat(): void {
+  sendHeartbeat().catch((error) => console.error('Heartbeat failed', error));
+}
+
+beat();
+setInterval(beat, heartbeatMilliseconds);
 
 console.log(`Autoloom worker listening on ${environment.convexURL}`);
