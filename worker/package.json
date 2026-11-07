@@ -1,0 +1,26 @@
+{
+  "name": "autoloom-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx --env-file-if-exists=.env src/index.ts",
+    "setup": "playwright install chromium"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.541",
+    "@remotion/renderer": "4.0.541",
+    "convex": "1.49.0",
+    "openai": "7.53.0",
+    "playwright": "1.63.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "remotion": "4.0.541",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "@types/react": "19.2.2",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  }
+}

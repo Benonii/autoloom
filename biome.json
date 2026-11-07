@@ -1,0 +1,35 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "files": {
+    "ignore": [
+      "node_modules",
+      "worker/node_modules",
+      "worker/output",
+      ".farm",
+      ".output",
+      ".vercel",
+      "convex/_generated",
+      "src/components/ui",
+      "**/farm.d.ts"
+    ]
+  },
+  "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 120 },
+  "javascript": {
+    "formatter": { "quoteStyle": "single", "jsxQuoteStyle": "single", "trailingCommas": "none", "semicolons": "always" }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "style": { "noDefaultExport": "error" },
+      "suspicious": { "noExplicitAny": "error" },
+      "a11y": { "useMediaCaption": "off", "useAnchorContent": "off" }
+    }
+  },
+  "overrides": [
+    {
+      "include": ["src/app/**", "farm.config.ts", "convex/schema.ts"],
+      "linter": { "rules": { "style": { "noDefaultExport": "off" } } }
+    }
+  ]
+}

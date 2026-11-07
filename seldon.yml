@@ -1,0 +1,108 @@
+name: autoloom
+labels: [hackathon]
+run:
+  url: https://autoloom.vercel.app
+  credentials: none
+testCases:
+  - name: Create a narrated video from a link and a goal
+    id: create-video
+    url: /
+    steps:
+      - in App link, enter https://autoloom.vercel.app/api/demo
+      - in What should it show, enter Show how to add a task to the Launch project
+      - open Needs a login and enter email demo@acme.dev and password launchday
+      - leave Voiceover on and click Record video
+      - watch the recording page until the video is ready (this can take up to 3 minutes)
+    criteria: >-
+      The recording page shows a live view of the demo app and a step list that fills in as the agent works.
+      When it finishes, the page shows a playable video, a Chapters list with timestamps, and a Script with one
+      line per chapter. No error message appears and the step list never stays empty after the video is ready.
+
+  - name: Login password is never shown
+    id: password-never-shown
+    url: /
+    steps:
+      - in App link, enter https://autoloom.vercel.app/api/demo
+      - in What should it show, enter Show how to invite a teammate
+      - open Needs a login and enter email demo@acme.dev and password launchday
+      - click Record video and wait until the video is ready
+      - read the step list, chapters, script, and the video captions
+    criteria: >-
+      The text launchday never appears anywhere in the Autoloom interface after submitting: not in the step list,
+      chapter titles, script lines, captions, page text, or the page address. The password field on the create
+      form masks what is typed.
+
+  - name: Editing a script line and re-rendering updates the video
+    id: edit-and-rerender
+    url: /
+    steps:
+      - create a video for https://autoloom.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday
+      - wait until the video is ready
+      - change the narration of the last script line to Done. Your task is on the list.
+      - click outside the line, then click Re-render video
+      - wait until the re-render finishes, then reload the page
+    criteria: >-
+      While re-rendering, the page says it is re-rendering and the buttons to re-render and re-record are disabled.
+      After it finishes and the page reloads, the last script line still reads Done. Your task is on the list.
+      The video still plays and the number of chapters did not change.
+
+  - name: Voiceover off gives a captions-only video
+    id: voiceover-off
+    url: /
+    steps:
+      - in App link, enter https://autoloom.vercel.app/api/demo
+      - in What should it show, enter Show how to add a task
+      - open Needs a login and enter email demo@acme.dev and password launchday
+      - turn Voiceover off and confirm the voice picker becomes disabled
+      - click Record video and wait until the video is ready
+    criteria: >-
+      With Voiceover off the voice picker cannot be changed. The finished video page shows the Voiceover switch
+      off and a playable video with captions. No error appears.
+
+  - name: Share link plays for someone who is not the owner
+    id: share-link
+    url: /
+    steps:
+      - create a video for https://autoloom.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday
+      - wait until the video is ready and click Copy share link
+      - open the copied link in a fresh private window
+    criteria: >-
+      The share page loads without signing in and shows the video title, a playable video, Chapters, and a
+      Transcript with the same lines as the script. It shows no edit controls (no Re-render, Re-record, or editable
+      script).
+
+  - name: Agent asks for a hint when it gets stuck
+    id: stuck-hint
+    url: /
+    steps:
+      - in App link, enter https://autoloom.vercel.app/api/demo
+      - in What should it show, enter Show how to export the project to PDF
+      - open Needs a login and enter email demo@acme.dev and password launchday
+      - click Record video and wait
+      - when the page asks where something is, type There is no export, just show the Tasks tab and submit
+    criteria: >-
+      Because the demo app has no PDF export, the page switches to a stuck state with a question and a hint field
+      instead of failing silently or spinning forever. After the hint is submitted the page goes back to recording
+      and ends with either a finished video or a clear error message, never a blank page.
+
+  - name: Invalid input shows a clear error
+    id: invalid-input
+    url: /
+    steps:
+      - in App link, enter not a link
+      - in What should it show, enter Show the dashboard
+      - click Record video
+      - change App link to https://autoloom.vercel.app/api/demo, clear What should it show, and click Record video
+    criteria: >-
+      The bad link is rejected on the create page with a readable message that tells the user what to fix, and no
+      video is created. An empty goal is also blocked before submitting. No raw error text or stack trace is shown.
+
+  - name: Library lists videos and opens them
+    id: library
+    url: /library
+    steps:
+      - if the list is empty, click New video and create one for https://autoloom.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday, then go back to Your videos
+      - click the first video in the list
+    criteria: >-
+      Your videos lists each video with its title, length or status, and the app's address. Clicking a video opens
+      its page. Videos that are still recording show a Recording badge instead of a length.

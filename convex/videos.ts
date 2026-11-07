@@ -1,0 +1,222 @@
+import { v } from 'convex/values';
+
+import { internal } from './_generated/api';
+import { action, internalMutation, mutation, query } from './_generated/server';
+import { readOwnedVideo } from './access';
+import { seal } from './sealing';
+
+import type { Doc, Id } from './_generated/dataModel';
+import type { QueryCtx } from './_generated/server';
+
+const maximumGoalLength = 500;
+
+function readTitle(goal: string): string {
+  const trimmedGoal = goal.trim().replace(/^show (me )?how to /i, '');
+  const title = trimmedGoal.charAt(0).toUpperCase() + trimmedGoal.slice(1);
+  return title.length > 60 ? `${title.slice(0, 57)}...` : title;
+}
+
+function normalizeURL(appURL: string): string {
+  const withProtocol = /^https?:\/\//i.test(appURL.trim()) ? appURL.trim() : `https://${appURL.trim()}`;
+  const parsed = new URL(withProtocol);
+  if (!parsed.hostname.includes('.') && parsed.hostname !== 'localhost')
+    throw new Error('Enter a full web address, like acme.com');
+  return parsed.toString();
+}
+
+async function toPublicVideo(context: QueryCtx, video: Doc<'videos'>) {
+  const videoURL = video.videoFileID ? await context.storage.getUrl(video.videoFileID) : null;
+  const liveFrameURL = video.liveFrameFileID ? await context.storage.getUrl(video.liveFrameFileID) : null;
+  return {
+    id: video._id,
+    title: video.title,
+    appURL: video.appURL,
+    goal: video.goal,
+    status: video.status,
+    voiceoverEnabled: video.voiceoverEnabled,
+    voiceID: video.voiceID,
+    hasCredentials: video.hasCredentials,
+    durationSeconds: video.durationSeconds ?? null,
+    stuckQuestion: video.stuckQuestion ?? null,
+    errorMessage: video.errorMessage ?? null,
+    hasUnrenderedEdits: video.hasUnrenderedEdits,
+    updatedAt: video._creationTime,
+    videoURL,
+    liveFrameURL
+  };
+}
+
+export const create = action({
+  args: {
+    deviceID: v.string(),
+    appURL: v.string(),
+    goal: v.string(),
+    voiceoverEnabled: v.boolean(),
+    voiceID: v.string(),
+    email: v.optional(v.string()),
+    password: v.optional(v.string())
+  },
+  handler: async (context, args): Promise<Id<'videos'>> => {
+    const goal = args.goal.trim();
+    if (goal.length === 0) throw new Error('Tell us what the video should show');
+    if (goal.length > maximumGoalLength) throw new Error('Keep the goal under 500 characters');
+    const appURL = normalizeURL(args.appURL);
+    const hasCredentials = Boolean(args.email && args.password);
+    const sealedEmail = hasCredentials && args.email ? await seal(args.email) : undefined;
+    const sealedPassword = hasCredentials && args.password ? await seal(args.password) : undefined;
+    return context.runMutation(internal.videos.insert, {
+      deviceID: args.deviceID,
+      appURL,
+      goal,
+      voiceoverEnabled: args.voiceoverEnabled,
+      voiceID: args.voiceID,
+      sealedEmail,
+      sealedPassword
+    });
+  }
+});
+
+export const insert = internalMutation({
+  args: {
+    deviceID: v.string(),
+    appURL: v.string(),
+    goal: v.string(),
+    voiceoverEnabled: v.boolean(),
+    voiceID: v.string(),
+    sealedEmail: v.optional(v.string()),
+    sealedPassword: v.optional(v.string())
+  },
+  handler: async (context, args) => {
+    const hasCredentials = Boolean(args.sealedEmail && args.sealedPassword);
+    const videoID = await context.db.insert('videos', {
+      deviceID: args.deviceID,
+      title: readTitle(args.goal),
+      appURL: args.appURL,
+      goal: args.goal,
+      status: 'recording',
+      voiceoverEnabled: args.voiceoverEnabled,
+      voiceID: args.voiceID,
+      hasCredentials,
+      hasUnrenderedEdits: false
+    });
+    if (args.sealedEmail && args.sealedPassword) {
+      await context.db.insert('credentials', {
+        videoID,
+        sealedEmail: args.sealedEmail,
+        sealedPassword: args.sealedPassword
+      });
+    }
+    await context.db.insert('jobs', { videoID, kind: 'record', status: 'queued' });
+    return videoID;
+  }
+});
+
+export const get = query({
+  args: { videoID: v.string() },
+  handler: async (context, args) => {
+    const videoID = context.db.normalizeId('videos', args.videoID);
+    if (!videoID) return null;
+    const video = await context.db.get(videoID);
+    if (!video) return null;
+    return toPublicVideo(context, video);
+  }
+});
+
+export const listMine = query({
+  args: { deviceID: v.string() },
+  handler: async (context, { deviceID }) => {
+    const videos = await context.db
+      .query('videos')
+      .withIndex('by_device', (index) => index.eq('deviceID', deviceID))
+      .order('desc')
+      .take(50);
+    return Promise.all(videos.map((video) => toPublicVideo(context, video)));
+  }
+});
+
+export const isOwner = query({
+  args: { videoID: v.string(), deviceID: v.string() },
+  handler: async (context, args) => {
+    const videoID = context.db.normalizeId('videos', args.videoID);
+    if (!videoID) return false;
+    const video = await context.db.get(videoID);
+    return video?.deviceID === args.deviceID;
+  }
+});
+
+export const updateNarration = mutation({
+  args: { deviceID: v.string(), stepID: v.id('steps'), narration: v.string() },
+  handler: async (context, { deviceID, stepID, narration }) => {
+    const step = await context.db.get(stepID);
+    if (!step) throw new Error('Step not found');
+    await readOwnedVideo(context, step.videoID, deviceID);
+    const trimmedNarration = narration.trim();
+    if (trimmedNarration.length === 0) throw new Error('Narration cannot be empty');
+    if (trimmedNarration === step.narration) return;
+    await context.db.patch(stepID, { narration: trimmedNarration });
+    await context.db.patch(step.videoID, { hasUnrenderedEdits: true });
+  }
+});
+
+export const rerender = mutation({
+  args: {
+    deviceID: v.string(),
+    videoID: v.id('videos'),
+    voiceoverEnabled: v.optional(v.boolean()),
+    voiceID: v.optional(v.string())
+  },
+  handler: async (context, { deviceID, videoID, voiceoverEnabled, voiceID }) => {
+    const video = await readOwnedVideo(context, videoID, deviceID);
+    if (video.status === 'recording' || video.status === 'rendering')
+      throw new Error('This video is already being made');
+    await context.db.patch(videoID, {
+      status: 'rendering',
+      hasUnrenderedEdits: false,
+      voiceoverEnabled: voiceoverEnabled ?? video.voiceoverEnabled,
+      voiceID: voiceID ?? video.voiceID
+    });
+    await context.db.insert('jobs', { videoID, kind: 'render', status: 'queued' });
+  }
+});
+
+export const rerecord = mutation({
+  args: { deviceID: v.string(), videoID: v.id('videos') },
+  handler: async (context, { deviceID, videoID }) => {
+    const video = await readOwnedVideo(context, videoID, deviceID);
+    if (video.status === 'recording' || video.status === 'rendering')
+      throw new Error('This video is already being made');
+    await context.db.patch(videoID, { status: 'recording', hasUnrenderedEdits: false });
+    await context.db.insert('jobs', { videoID, kind: 'rerecord', status: 'queued' });
+  }
+});
+
+export const answerStuck = mutation({
+  args: { deviceID: v.string(), videoID: v.id('videos'), hint: v.string() },
+  handler: async (context, { deviceID, videoID, hint }) => {
+    const video = await readOwnedVideo(context, videoID, deviceID);
+    if (video.status !== 'stuck') return;
+    const trimmedHint = hint.trim();
+    if (trimmedHint.length === 0) throw new Error('Add a hint so the agent knows what to try');
+    await context.db.patch(videoID, { status: 'recording', hint: trimmedHint, stuckQuestion: undefined });
+  }
+});
+
+export const remove = mutation({
+  args: { deviceID: v.string(), videoID: v.id('videos') },
+  handler: async (context, { deviceID, videoID }) => {
+    const video = await readOwnedVideo(context, videoID, deviceID);
+    const steps = await context.db
+      .query('steps')
+      .withIndex('by_video', (index) => index.eq('videoID', videoID))
+      .collect();
+    await Promise.all(steps.map((step) => context.db.delete(step._id)));
+    const credentials = await context.db
+      .query('credentials')
+      .withIndex('by_video', (index) => index.eq('videoID', videoID))
+      .collect();
+    await Promise.all(credentials.map((credential) => context.db.delete(credential._id)));
+    if (video.videoFileID) await context.storage.delete(video.videoFileID);
+    if (video.liveFrameFileID) await context.storage.delete(video.liveFrameFileID);
+    await context.db.delete(videoID);
+  }
+});

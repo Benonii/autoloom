@@ -1,0 +1,39 @@
+{
+  "name": "autoloom",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "farm dev --port 5173",
+    "build": "farm build",
+    "start": "farm start",
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit",
+    "test:wren": "seldon validate"
+  },
+  "dependencies": {
+    "@base-ui/react": "1.9.0",
+    "@farm.js/convex": "0.1.0-beta.14",
+    "@farm.js/core": "0.1.60",
+    "@fontsource/comfortaa": "5.3.0",
+    "@paper-design/shaders-react": "0.0.82",
+    "@tailwindcss/vite": "4.3.3",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "convex": "1.49.0",
+    "lucide-react": "1.57.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "tailwind-merge": "3.7.0",
+    "tailwindcss": "4.3.3",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@farm.js/cli": "0.1.60",
+    "@types/node": "26.6.6",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  }
+}

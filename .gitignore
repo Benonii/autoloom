@@ -1,0 +1,12 @@
+node_modules
+.farm
+.output
+.vercel
+.env
+.env.local
+.seldon/last-run
+worker/output
+worker/node_modules
+farm.d.ts
+worker/.env
+src/lib/api.generated.ts
