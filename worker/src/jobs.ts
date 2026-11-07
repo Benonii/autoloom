@@ -92,6 +92,8 @@ export async function runJob(job: ClaimedJob): Promise<void> {
     const rawMessage = error instanceof Error ? error.message : 'The worker hit an unknown error';
     const message = (stripVTControlCharacters(rawMessage).split('\n')[0] ?? rawMessage).trim();
     console.error('Job failed', error);
-    await failJob(job.jobID, message.slice(0, 300));
+    await failJob(job.jobID, message.slice(0, 300)).catch((failError) =>
+      console.error('Could not mark the job failed', failError)
+    );
   }
 }

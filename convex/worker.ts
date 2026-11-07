@@ -152,6 +152,8 @@ export const markStuck = mutation({
   args: { workerSecret: v.string(), videoID: v.id('videos'), question: v.string() },
   handler: async (context, { workerSecret, videoID, question }) => {
     assertWorker(workerSecret);
+    const video = await context.db.get(videoID);
+    if (!video) throw new Error('This video was deleted');
     await context.db.patch(videoID, { status: 'stuck', stuckQuestion: question, hint: undefined });
   }
 });
@@ -161,7 +163,8 @@ export const readHint = query({
   handler: async (context, { workerSecret, videoID }) => {
     assertWorker(workerSecret);
     const video = await context.db.get(videoID);
-    return video?.status === 'recording' ? (video.hint ?? null) : null;
+    if (!video) throw new Error('This video was deleted');
+    return video.status === 'recording' ? (video.hint ?? null) : null;
   }
 });
 
@@ -169,6 +172,8 @@ export const markRendering = mutation({
   args: { workerSecret: v.string(), videoID: v.id('videos') },
   handler: async (context, { workerSecret, videoID }) => {
     assertWorker(workerSecret);
+    const video = await context.db.get(videoID);
+    if (!video) throw new Error('This video was deleted');
     await context.db.patch(videoID, { status: 'rendering' });
   }
 });
@@ -205,8 +210,9 @@ export const failJob = mutation({
     assertWorker(workerSecret);
     const job = await context.db.get(jobID);
     if (!job) return;
-    await context.db.patch(job.videoID, { status: 'failed', errorMessage });
     await context.db.patch(jobID, { status: 'failed' });
+    const video = await context.db.get(job.videoID);
+    if (video) await context.db.patch(job.videoID, { status: 'failed', errorMessage });
   }
 });
 

@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
 export const videoStatus = v.union(
+  v.literal('waitingForLogin'),
   v.literal('recording'),
   v.literal('stuck'),
   v.literal('rendering'),
@@ -33,8 +34,15 @@ export default defineSchema({
     stuckQuestion: v.optional(v.string()),
     hint: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
-    hasUnrenderedEdits: v.boolean()
+    hasUnrenderedEdits: v.boolean(),
+    loginToken: v.optional(v.string())
   }).index('by_device', ['deviceID']),
+  agentKeys: defineTable({
+    deviceID: v.string(),
+    keyHash: v.string()
+  })
+    .index('by_hash', ['keyHash'])
+    .index('by_device', ['deviceID']),
   steps: defineTable({
     videoID: v.id('videos'),
     order: v.number(),
@@ -52,7 +60,9 @@ export default defineSchema({
     kind: jobKind,
     status: jobStatus,
     claimedAt: v.optional(v.number())
-  }).index('by_status', ['status']),
+  })
+    .index('by_status', ['status'])
+    .index('by_video', ['videoID']),
   recorders: defineTable({
     lastSeenAt: v.number()
   }),

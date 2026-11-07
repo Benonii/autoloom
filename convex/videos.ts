@@ -6,11 +6,15 @@ import { readOwnedVideo } from './access';
 import { seal } from './sealing';
 
 import type { Doc, Id } from './_generated/dataModel';
-import type { QueryCtx } from './_generated/server';
+import type { MutationCtx, QueryCtx } from './_generated/server';
 
-const maximumGoalLength = 500;
+export const maximumGoalLength = 500;
 
-function readTitle(goal: string): string {
+function isBusy(status: Doc<'videos'>['status']): boolean {
+  return status === 'recording' || status === 'rendering' || status === 'waitingForLogin';
+}
+
+export function readTitle(goal: string): string {
   const trimmedGoal = goal.trim().replace(/^show (me )?how to /i, '');
   const title = trimmedGoal.charAt(0).toUpperCase() + trimmedGoal.slice(1);
   return title.length > 60 ? `${title.slice(0, 57)}...` : title;
@@ -24,7 +28,7 @@ function readURL(text: string): URL | null {
   }
 }
 
-function normalizeURL(appURL: string): string {
+export function normalizeURL(appURL: string): string {
   const trimmedURL = appURL.trim();
   const withProtocol = /^https?:\/\//i.test(trimmedURL) ? trimmedURL : `https://${trimmedURL}`;
   const parsed = readURL(withProtocol);
@@ -33,7 +37,7 @@ function normalizeURL(appURL: string): string {
   return parsed.toString();
 }
 
-async function toPublicVideo(context: QueryCtx, video: Doc<'videos'>) {
+export async function toPublicVideo(context: QueryCtx, video: Doc<'videos'>) {
   const videoURL = video.videoFileID ? await context.storage.getUrl(video.videoFileID) : null;
   const liveFrameURL = video.liveFrameFileID ? await context.storage.getUrl(video.liveFrameFileID) : null;
   return {
@@ -93,7 +97,8 @@ export const insert = internalMutation({
     voiceoverEnabled: v.boolean(),
     voiceID: v.string(),
     sealedEmail: v.optional(v.string()),
-    sealedPassword: v.optional(v.string())
+    sealedPassword: v.optional(v.string()),
+    loginToken: v.optional(v.string())
   },
   handler: async (context, args) => {
     const hasCredentials = Boolean(args.sealedEmail && args.sealedPassword);
@@ -102,7 +107,8 @@ export const insert = internalMutation({
       title: readTitle(args.goal),
       appURL: args.appURL,
       goal: args.goal,
-      status: 'recording',
+      status: args.loginToken ? 'waitingForLogin' : 'recording',
+      loginToken: args.loginToken,
       voiceoverEnabled: args.voiceoverEnabled,
       voiceID: args.voiceID,
       hasCredentials,
@@ -115,7 +121,7 @@ export const insert = internalMutation({
         sealedPassword: args.sealedPassword
       });
     }
-    await context.db.insert('jobs', { videoID, kind: 'record', status: 'queued' });
+    if (!args.loginToken) await context.db.insert('jobs', { videoID, kind: 'record', status: 'queued' });
     return videoID;
   }
 });
@@ -153,19 +159,43 @@ export const isOwner = query({
   }
 });
 
+export async function editNarration(context: MutationCtx, deviceID: string, stepID: Id<'steps'>, narration: string) {
+  const step = await context.db.get(stepID);
+  if (!step) throw new ConvexError('Step not found');
+  await readOwnedVideo(context, step.videoID, deviceID);
+  const trimmedNarration = narration.trim();
+  if (trimmedNarration.length === 0) throw new ConvexError('Narration cannot be empty');
+  if (trimmedNarration === step.narration) return;
+  await context.db.patch(stepID, { narration: trimmedNarration });
+  await context.db.patch(step.videoID, { hasUnrenderedEdits: true });
+}
+
 export const updateNarration = mutation({
   args: { deviceID: v.string(), stepID: v.id('steps'), narration: v.string() },
-  handler: async (context, { deviceID, stepID, narration }) => {
-    const step = await context.db.get(stepID);
-    if (!step) throw new ConvexError('Step not found');
-    await readOwnedVideo(context, step.videoID, deviceID);
-    const trimmedNarration = narration.trim();
-    if (trimmedNarration.length === 0) throw new ConvexError('Narration cannot be empty');
-    if (trimmedNarration === step.narration) return;
-    await context.db.patch(stepID, { narration: trimmedNarration });
-    await context.db.patch(step.videoID, { hasUnrenderedEdits: true });
-  }
+  handler: (context, { deviceID, stepID, narration }) => editNarration(context, deviceID, stepID, narration)
 });
+
+interface RenderOptions {
+  voiceoverEnabled?: boolean;
+  voiceID?: string;
+}
+
+export async function startRender(
+  context: MutationCtx,
+  deviceID: string,
+  videoID: Id<'videos'>,
+  { voiceoverEnabled, voiceID }: RenderOptions
+) {
+  const video = await readOwnedVideo(context, videoID, deviceID);
+  if (isBusy(video.status)) throw new ConvexError('This video is already being made');
+  await context.db.patch(videoID, {
+    status: 'rendering',
+    hasUnrenderedEdits: false,
+    voiceoverEnabled: voiceoverEnabled ?? video.voiceoverEnabled,
+    voiceID: voiceID ?? video.voiceID
+  });
+  await context.db.insert('jobs', { videoID, kind: 'render', status: 'queued' });
+}
 
 export const rerender = mutation({
   args: {
@@ -174,40 +204,31 @@ export const rerender = mutation({
     voiceoverEnabled: v.optional(v.boolean()),
     voiceID: v.optional(v.string())
   },
-  handler: async (context, { deviceID, videoID, voiceoverEnabled, voiceID }) => {
-    const video = await readOwnedVideo(context, videoID, deviceID);
-    if (video.status === 'recording' || video.status === 'rendering')
-      throw new ConvexError('This video is already being made');
-    await context.db.patch(videoID, {
-      status: 'rendering',
-      hasUnrenderedEdits: false,
-      voiceoverEnabled: voiceoverEnabled ?? video.voiceoverEnabled,
-      voiceID: voiceID ?? video.voiceID
-    });
-    await context.db.insert('jobs', { videoID, kind: 'render', status: 'queued' });
-  }
+  handler: (context, { deviceID, videoID, voiceoverEnabled, voiceID }) =>
+    startRender(context, deviceID, videoID, { voiceoverEnabled, voiceID })
 });
 
 export const rerecord = mutation({
   args: { deviceID: v.string(), videoID: v.id('videos') },
   handler: async (context, { deviceID, videoID }) => {
     const video = await readOwnedVideo(context, videoID, deviceID);
-    if (video.status === 'recording' || video.status === 'rendering')
-      throw new ConvexError('This video is already being made');
+    if (isBusy(video.status)) throw new ConvexError('This video is already being made');
     await context.db.patch(videoID, { status: 'recording', hasUnrenderedEdits: false });
     await context.db.insert('jobs', { videoID, kind: 'rerecord', status: 'queued' });
   }
 });
 
+export async function giveHint(context: MutationCtx, deviceID: string, videoID: Id<'videos'>, hint: string) {
+  const video = await readOwnedVideo(context, videoID, deviceID);
+  if (video.status !== 'stuck') throw new ConvexError('The recorder is not waiting for a hint right now');
+  const trimmedHint = hint.trim();
+  if (trimmedHint.length === 0) throw new ConvexError('Add a hint so the agent knows what to try');
+  await context.db.patch(videoID, { status: 'recording', hint: trimmedHint, stuckQuestion: undefined });
+}
+
 export const answerStuck = mutation({
   args: { deviceID: v.string(), videoID: v.id('videos'), hint: v.string() },
-  handler: async (context, { deviceID, videoID, hint }) => {
-    const video = await readOwnedVideo(context, videoID, deviceID);
-    if (video.status !== 'stuck') return;
-    const trimmedHint = hint.trim();
-    if (trimmedHint.length === 0) throw new ConvexError('Add a hint so the agent knows what to try');
-    await context.db.patch(videoID, { status: 'recording', hint: trimmedHint, stuckQuestion: undefined });
-  }
+  handler: (context, { deviceID, videoID, hint }) => giveHint(context, deviceID, videoID, hint)
 });
 
 export const remove = mutation({
@@ -224,8 +245,57 @@ export const remove = mutation({
       .withIndex('by_video', (index) => index.eq('videoID', videoID))
       .collect();
     await Promise.all(credentials.map((credential) => context.db.delete(credential._id)));
+    const jobs = await context.db
+      .query('jobs')
+      .withIndex('by_video', (index) => index.eq('videoID', videoID))
+      .collect();
+    await Promise.all(jobs.map((job) => context.db.delete(job._id)));
     if (video.videoFileID) await context.storage.delete(video.videoFileID);
     if (video.liveFrameFileID) await context.storage.delete(video.liveFrameFileID);
     await context.db.delete(videoID);
+  }
+});
+
+export const readLoginRequest = query({
+  args: { videoID: v.string(), loginToken: v.string() },
+  handler: async (context, args) => {
+    const videoID = context.db.normalizeId('videos', args.videoID);
+    if (!videoID) return null;
+    const video = await context.db.get(videoID);
+    if (!video) return null;
+    const isOpen = video.status === 'waitingForLogin' && video.loginToken === args.loginToken;
+    return { title: video.title, appURL: video.appURL, isOpen };
+  }
+});
+
+export const addLogin = action({
+  args: { videoID: v.string(), loginToken: v.string(), email: v.string(), password: v.string() },
+  handler: async (context, args): Promise<void> => {
+    const email = args.email.trim();
+    if (email.length === 0 || args.password.length === 0)
+      throw new ConvexError('Enter both the email and the password');
+    await context.runMutation(internal.videos.attachLogin, {
+      videoID: args.videoID,
+      loginToken: args.loginToken,
+      sealedEmail: await seal(email),
+      sealedPassword: await seal(args.password)
+    });
+  }
+});
+
+export const attachLogin = internalMutation({
+  args: { videoID: v.string(), loginToken: v.string(), sealedEmail: v.string(), sealedPassword: v.string() },
+  handler: async (context, args) => {
+    const videoID = context.db.normalizeId('videos', args.videoID);
+    const video = videoID ? await context.db.get(videoID) : null;
+    if (!videoID || !video || video.status !== 'waitingForLogin' || video.loginToken !== args.loginToken)
+      throw new ConvexError('This login link has already been used or is not valid');
+    await context.db.insert('credentials', {
+      videoID,
+      sealedEmail: args.sealedEmail,
+      sealedPassword: args.sealedPassword
+    });
+    await context.db.patch(videoID, { status: 'recording', hasCredentials: true, loginToken: undefined });
+    await context.db.insert('jobs', { videoID, kind: 'record', status: 'queued' });
   }
 });

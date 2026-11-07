@@ -26,6 +26,16 @@ export function VideoScreen({ videoID }: VideoScreenRouteProps) {
       </AppShell>
     );
   }
+  if (video.status === 'waitingForLogin') {
+    return (
+      <AppShell>
+        <PageTitle
+          title='Waiting for a login'
+          description='Open the secure login link your agent sent you. Recording starts as soon as you add it.'
+        />
+      </AppShell>
+    );
+  }
   if (video.status === 'stuck') return <StuckScreen video={video} steps={steps} />;
   if (video.status === 'failed') return <FailedScreen video={video} steps={steps} />;
   if (video.status === 'recording' || (video.status === 'rendering' && !video.videoURL)) {

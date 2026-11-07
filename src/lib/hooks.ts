@@ -60,3 +60,15 @@ export function useNow(intervalMilliseconds: number): number {
   }, [intervalMilliseconds]);
   return now;
 }
+
+function readEmptyText(): string {
+  return '';
+}
+
+export function useSearchParameter(name: string): string {
+  return useSyncExternalStore(
+    subscribeToNothing,
+    () => new URLSearchParams(window.location.search).get(name) ?? '',
+    readEmptyText
+  );
+}

@@ -11,6 +11,7 @@ import { formatTimestamp, readHostname } from '@/lib/steps';
 import type { PublicVideo } from '@/types';
 
 const statusLabels: Record<PublicVideo['status'], string | null> = {
+  waitingForLogin: 'Needs a login',
   recording: 'Recording',
   rendering: 'Rendering',
   stuck: 'Needs a hint',
@@ -47,7 +48,11 @@ export function LibraryScreen() {
                     <span className='text-lg font-bold sm:text-xl'>{video.title}</span>
                     {statusLabel && (
                       <Badge
-                        variant={video.status === 'failed' || video.status === 'stuck' ? 'warning' : 'secondary'}
+                        variant={
+                          video.status === 'failed' || video.status === 'stuck' || video.status === 'waitingForLogin'
+                            ? 'warning'
+                            : 'secondary'
+                        }
                         size='lg'
                       >
                         {statusLabel}
