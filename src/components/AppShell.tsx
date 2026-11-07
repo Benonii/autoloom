@@ -1,4 +1,4 @@
-import { Film, Plus } from 'lucide-react';
+import { Bot, Film, Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,11 @@ export function AppShell({ children, isCreateHidden = false }: AppShellProps) {
           Autoloom
         </a>
         <nav className='flex items-center gap-1 sm:gap-2'>
-          <Button variant='ghost' size='lg' render={<a href='/library' />}>
+          <Button variant='ghost' size='lg' render={<a href='/connect' />} aria-label='Agents'>
+            <Bot />
+            <span className='hidden sm:inline'>Agents</span>
+          </Button>
+          <Button variant='ghost' size='lg' render={<a href='/library' />} aria-label='Videos'>
             <Film />
             <span className='hidden sm:inline'>Videos</span>
           </Button>

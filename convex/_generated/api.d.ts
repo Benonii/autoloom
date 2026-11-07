@@ -9,6 +9,7 @@
  */
 
 import type * as access from "../access.js";
+import type * as agents from "../agents.js";
 import type * as failures from "../failures.js";
 import type * as queue from "../queue.js";
 import type * as sealing from "../sealing.js";
@@ -24,6 +25,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   access: typeof access;
+  agents: typeof agents;
   failures: typeof failures;
   queue: typeof queue;
   sealing: typeof sealing;
