@@ -3,6 +3,7 @@ import { ConvexError, v } from 'convex/values';
 import { internal } from './_generated/api';
 import { action, internalMutation, mutation, query } from './_generated/server';
 import { readOwnedVideo } from './access';
+import { assertReachable } from './reachability';
 import { seal } from './sealing';
 
 import type { Doc, Id } from './_generated/dataModel';
@@ -74,6 +75,7 @@ export const create = action({
     if (goal.length === 0) throw new ConvexError('Tell us what the video should show');
     if (goal.length > maximumGoalLength) throw new ConvexError('Keep the goal under 500 characters');
     const appURL = normalizeURL(args.appURL);
+    await assertReachable(appURL);
     const hasCredentials = Boolean(args.email && args.password);
     const sealedEmail = hasCredentials && args.email ? await seal(args.email) : undefined;
     const sealedPassword = hasCredentials && args.password ? await seal(args.password) : undefined;

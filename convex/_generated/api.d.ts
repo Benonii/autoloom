@@ -12,6 +12,7 @@ import type * as access from "../access.js";
 import type * as agents from "../agents.js";
 import type * as failures from "../failures.js";
 import type * as queue from "../queue.js";
+import type * as reachability from "../reachability.js";
 import type * as sealing from "../sealing.js";
 import type * as steps from "../steps.js";
 import type * as videos from "../videos.js";
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   agents: typeof agents;
   failures: typeof failures;
   queue: typeof queue;
+  reachability: typeof reachability;
   sealing: typeof sealing;
   steps: typeof steps;
   videos: typeof videos;

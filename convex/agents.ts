@@ -3,6 +3,7 @@ import { ConvexError, v } from 'convex/values';
 import { internal } from './_generated/api';
 import { action, internalMutation, internalQuery, mutation, query } from './_generated/server';
 import { readOwnedVideo } from './access';
+import { assertReachable } from './reachability';
 import {
   canTakeLogin,
   editNarration,
@@ -112,6 +113,7 @@ export const createVideo = action({
     } catch (error) {
       throw toReadableError(error);
     }
+    await assertReachable(appURL);
     const loginToken = args.needsLogin ? createSecret() : null;
     const videoID: Id<'videos'> = await context.runMutation(internal.videos.insert, {
       deviceID,

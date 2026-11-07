@@ -138,11 +138,11 @@ testCases:
     steps:
       - in App link, enter https://autoloom-site-that-does-not-exist.invalid
       - in What should it show, enter Show the dashboard
-      - click Record video and wait up to 2 minutes
+      - click Record video and wait up to 30 seconds
     criteria: >-
-      Autoloom ends on a failure page within 2 minutes instead of recording forever. The message says in plain words
-      that the site could not be reached and shows no raw error codes such as net::ERR or stack traces. A Try again
-      button is offered.
+      Within 30 seconds of clicking Record video, Autoloom tells the user in plain words that the site could not be
+      reached, without putting the video in the recording queue. No raw error codes such as net::ERR or stack traces
+      are shown, and the form keeps what the user typed so they can fix the link and try again.
 
   - name: Broken video links show a friendly page
     id: broken-links
