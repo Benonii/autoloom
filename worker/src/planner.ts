@@ -77,5 +77,39 @@ export async function decideNextStep(input: PlannerInput): Promise<PlannerDecisi
     input: userMessage,
     text: { format: { type: 'json_schema', name: 'next_step', strict: true, schema: jsonSchema } }
   });
-  return decisionSchema.parse(JSON.parse(response.output_text));
+  return decisionSchema.parse(JSON.parse(readFirstJSONObject(readFirstOutputText(response))));
+}
+
+function readFirstOutputText(response: OpenAI.Responses.Response): string {
+  for (const item of response.output) {
+    if (item.type !== 'message') continue;
+    for (const content of item.content) {
+      if (content.type === 'output_text' && content.text.trim()) return content.text;
+    }
+  }
+  return response.output_text;
+}
+
+function readFirstJSONObject(text: string): string {
+  const start = text.indexOf('{');
+  if (start < 0) throw new Error('The planner did not return a decision');
+  let depth = 0;
+  let isInString = false;
+  let isEscaped = false;
+  for (let index = start; index < text.length; index += 1) {
+    const character = text[index];
+    if (isInString) {
+      if (isEscaped) isEscaped = false;
+      else if (character === '\\') isEscaped = true;
+      else if (character === '"') isInString = false;
+      continue;
+    }
+    if (character === '"') isInString = true;
+    else if (character === '{') depth += 1;
+    else if (character === '}') {
+      depth -= 1;
+      if (depth === 0) return text.slice(start, index + 1);
+    }
+  }
+  throw new Error('The planner returned an unfinished decision');
 }
