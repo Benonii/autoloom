@@ -53,7 +53,11 @@ export function RecordingScreen({ video, steps }: VideoScreenProps) {
         <div className='relative isolate overflow-hidden rounded-[2rem] bg-deep p-3 sm:p-5'>
           <TealDither shape='dots' className='-z-20 opacity-30' />
           <LiveGlow />
-          <BrowserFrame url={readHostname(video.appURL)} isLive={!isRendering && !waitingLabel} className='relative z-10'>
+          <BrowserFrame
+            url={readHostname(video.appURL)}
+            isLive={!isRendering && !waitingLabel}
+            className='relative z-10'
+          >
             {video.liveFrameURL ? (
               <img
                 src={video.liveFrameURL}

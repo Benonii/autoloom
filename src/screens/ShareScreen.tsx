@@ -25,6 +25,9 @@ export function ShareScreen({ videoID }: ShareScreenProps) {
     return (
       <div className='mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-12'>
         <PageTitle title='This video is not available' description='The link may be wrong, or the video was deleted.' />
+        <a href='/' className='font-bold text-foreground underline underline-offset-4'>
+          Go to Autoloom
+        </a>
       </div>
     );
   }

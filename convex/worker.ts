@@ -3,6 +3,7 @@ import { v } from 'convex/values';
 import { internal } from './_generated/api';
 import { action, internalQuery, mutation, query } from './_generated/server';
 import { assertWorker } from './access';
+import { toFriendlyFailure } from './failures';
 import { stepBox, stepKind } from './schema';
 import { unseal } from './sealing';
 
@@ -205,7 +206,7 @@ export const failJob = mutation({
     assertWorker(workerSecret);
     const job = await context.db.get(jobID);
     if (!job) return;
-    await context.db.patch(job.videoID, { status: 'failed', errorMessage });
+    await context.db.patch(job.videoID, { status: 'failed', errorMessage: toFriendlyFailure(errorMessage) });
     await context.db.patch(jobID, { status: 'failed' });
   }
 });
