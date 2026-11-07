@@ -32,7 +32,8 @@ export async function performStep(
   }
   if (step.kind === 'type') {
     await locator.click({ timeout: 10_000 });
-    await locator.fill('');
+    await locator.press('ControlOrMeta+a');
+    await locator.press('Backspace');
     await locator.pressSequentially(fillSecrets(step.value ?? '', credentials), { delay: typingDelayMilliseconds });
   }
 }

@@ -62,6 +62,26 @@ function collectInPage(limit: number): PageElement[] {
     if (text.trim()) return text;
     return element.getAttribute('placeholder') ?? element.getAttribute('title') ?? '';
   }
+  function readCSSPath(element: HTMLElement): string {
+    const parts: string[] = [];
+    let current: Element | null = element;
+    while (current && current !== document.body) {
+      if (current.id && /^[A-Za-z][\w-]*$/.test(current.id)) {
+        parts.unshift(`#${current.id}`);
+        break;
+      }
+      const tagName = current.tagName.toLowerCase();
+      const parent: Element | null = current.parentElement;
+      const sameTagSiblings = parent
+        ? Array.from(parent.children).filter((child) => child.tagName === current?.tagName)
+        : [];
+      parts.unshift(
+        sameTagSiblings.length > 1 ? `${tagName}:nth-of-type(${sameTagSiblings.indexOf(current) + 1})` : tagName
+      );
+      current = parent;
+    }
+    return parts.join(' > ');
+  }
   return visible.slice(0, limit).map((element, index) => {
     const number = index + 1;
     element.setAttribute('data-autoloom-number', String(number));
@@ -83,6 +103,7 @@ function collectInPage(limit: number): PageElement[] {
       placeholder: element.getAttribute('placeholder') ?? '',
       inputName: element.getAttribute('name') ?? '',
       testID: element.getAttribute('data-testid') ?? '',
+      cssPath: readCSSPath(element),
       isTextInput,
       isPasswordInput: inputType === 'password'
     };
@@ -97,6 +118,7 @@ function buildCandidates(element: PageElement): string[] {
   const candidates: string[] = [];
   if (element.testID) candidates.push(`[data-testid=${quote(element.testID)}]`);
   if (element.name) candidates.push(`role=${element.role}[name=${quote(element.name)}]`);
+  if (element.name && element.isTextInput) candidates.push(`internal:label=${quote(element.name)}s`);
   if (element.id && /^[A-Za-z][\w-]*$/.test(element.id)) candidates.push(`#${element.id}`);
   if (element.inputName) candidates.push(`${element.tag}[name=${quote(element.inputName)}]`);
   if (element.placeholder) candidates.push(`[placeholder=${quote(element.placeholder)}]`);
@@ -127,7 +149,7 @@ async function chooseSelector(page: Page, element: PageElement): Promise<string>
       if (await pointsAtElement(page, candidate, element.number)) return candidate;
     }
   }
-  return `[data-autoloom-number="${element.number}"]`;
+  return element.cssPath;
 }
 
 export async function collectElements(page: Page): Promise<PageElement[]> {

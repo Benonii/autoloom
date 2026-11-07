@@ -55,6 +55,18 @@
           }
         }
       }
+    },
+    {
+      "include": ["src/ledgerly/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "useFocusableInteractive": "off",
+            "noNoninteractiveElementToInteractiveRole": "off"
+          }
+        }
+      }
     }
   ]
 }

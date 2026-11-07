@@ -34,16 +34,45 @@ function estimateReadingSeconds(text: string): number {
   return wordCount / wordsPerSecond + 0.6;
 }
 
-async function speak(text: string, voiceID: string, filePath: string): Promise<number> {
-  if (!client) throw new Error('OPENAI_API_KEY is not set in worker/.env');
+const elevenLabsVoices: Record<string, string> = {
+  sarah: 'EXAVITQu4vr4xnSDxMaL',
+  george: 'JBFqnCBsd6RMkjVDRZzb',
+  charlie: 'IKne3meq5aSn9XLyUdCD'
+};
+
+const openAIVoices: Record<string, string> = { sarah: 'coral', george: 'ash', charlie: 'verse' };
+
+async function speakWithElevenLabs(text: string, voiceID: string): Promise<Uint8Array> {
+  const elevenLabsVoiceID = elevenLabsVoices[voiceID] ?? elevenLabsVoices.sarah;
+  const response = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${elevenLabsVoiceID}?output_format=pcm_24000`,
+    {
+      method: 'POST',
+      headers: { 'xi-api-key': environment.elevenLabsKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, model_id: environment.elevenLabsModel })
+    }
+  );
+  if (!response.ok)
+    throw new Error(`ElevenLabs voiceover failed (${response.status}): ${(await response.text()).slice(0, 160)}`);
+  return new Uint8Array(await response.arrayBuffer());
+}
+
+async function speakWithOpenAI(text: string, voiceID: string): Promise<Uint8Array> {
+  if (!client) throw new Error('Set ELEVENLABS_API_KEY or OPENAI_API_KEY in worker/.env');
   const response = await client.audio.speech.create({
     model: environment.speechModel,
-    voice: voiceID,
+    voice: openAIVoices[voiceID] ?? voiceID,
     input: text,
     instructions: 'Friendly, clear product walkthrough narrator. Natural pace.',
     response_format: 'pcm'
   });
-  const pcm = new Uint8Array(await response.arrayBuffer());
+  return new Uint8Array(await response.arrayBuffer());
+}
+
+async function speak(text: string, voiceID: string, filePath: string): Promise<number> {
+  const pcm = environment.elevenLabsKey
+    ? await speakWithElevenLabs(text, voiceID)
+    : await speakWithOpenAI(text, voiceID);
   await writeFile(filePath, wrapInWave(pcm));
   return pcm.byteLength / (sampleRate * bytesPerSample);
 }
@@ -54,14 +83,15 @@ export async function narrate(
   voiceID: string,
   directory: string
 ): Promise<Narration[]> {
-  return Promise.all(
-    texts.map(async (text, stepIndex) => {
-      if (!voiceoverEnabled) {
-        return { stepIndex, text, audioPath: null, durationSeconds: estimateReadingSeconds(text) };
-      }
-      const audioPath = path.join(directory, `voice-${stepIndex}.wav`);
-      const durationSeconds = await speak(text, voiceID, audioPath);
-      return { stepIndex, text, audioPath, durationSeconds };
-    })
-  );
+  const narrations: Narration[] = [];
+  for (const [stepIndex, text] of texts.entries()) {
+    if (!voiceoverEnabled) {
+      narrations.push({ stepIndex, text, audioPath: null, durationSeconds: estimateReadingSeconds(text) });
+      continue;
+    }
+    const audioPath = path.join(directory, `voice-${stepIndex}.wav`);
+    const durationSeconds = await speak(text, voiceID, audioPath);
+    narrations.push({ stepIndex, text, audioPath, durationSeconds });
+  }
+  return narrations;
 }

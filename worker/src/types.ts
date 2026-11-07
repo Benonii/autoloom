@@ -59,6 +59,7 @@ export interface PageElement {
   placeholder: string;
   inputName: string;
   testID: string;
+  cssPath: string;
   isTextInput: boolean;
   isPasswordInput: boolean;
 }

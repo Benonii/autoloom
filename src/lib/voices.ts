@@ -1,9 +1,9 @@
 import type { VoiceOption } from '@/types';
 
-export const defaultVoiceID = 'coral';
+export const defaultVoiceID = 'sarah';
 
 export const voiceOptions: VoiceOption[] = [
-  { value: 'coral', label: 'Coral, warm' },
-  { value: 'ash', label: 'Ash, steady' },
-  { value: 'nova', label: 'Nova, bright' }
+  { value: 'sarah', label: 'Sarah, warm' },
+  { value: 'george', label: 'George, steady' },
+  { value: 'charlie', label: 'Charlie, upbeat' }
 ];

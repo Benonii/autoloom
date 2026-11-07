@@ -9,7 +9,7 @@ import { decideNextStep } from '@worker/planner';
 import type { Credentials, JobVideo, PlannedStep } from '@worker/types';
 import type { Page } from 'playwright';
 
-const maximumSteps = 15;
+const maximumSteps = 30;
 const hintWaitMilliseconds = 10 * 60 * 1000;
 export const viewport = { width: 1280, height: 720 };
 

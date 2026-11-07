@@ -8,9 +8,9 @@ testCases:
     id: create-video
     url: /
     steps:
-      - in App link, enter https://autoloom-app.vercel.app/api/demo
-      - in What should it show, enter Show how to add a task to the Launch project
-      - open Needs a login and enter email demo@acme.dev and password launchday
+      - in App link, enter https://autoloom-app.vercel.app/ledgerly
+      - in What should it show, enter Create and send an invoice to Acme Robotics with two line items and Net 15 terms
+      - open Needs a login and enter email demo@ledgerly.app and password launchday
       - leave Voiceover on and click Record video
       - watch the recording page until the video is ready (this can take up to 3 minutes)
     criteria: >-
@@ -22,9 +22,9 @@ testCases:
     id: password-never-shown
     url: /
     steps:
-      - in App link, enter https://autoloom-app.vercel.app/api/demo
-      - in What should it show, enter Show how to invite a teammate
-      - open Needs a login and enter email demo@acme.dev and password launchday
+      - in App link, enter https://autoloom-app.vercel.app/ledgerly
+      - in What should it show, enter Show how to invite a team member as an Accountant
+      - open Needs a login and enter email demo@ledgerly.app and password launchday
       - click Record video and wait until the video is ready
       - read the step list, chapters, script, and the video captions
     criteria: >-
@@ -36,23 +36,23 @@ testCases:
     id: edit-and-rerender
     url: /
     steps:
-      - create a video for https://autoloom-app.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday
+      - create a video for https://autoloom-app.vercel.app/ledgerly with the goal Show how to add a customer, using email demo@ledgerly.app and password launchday
       - wait until the video is ready
-      - change the narration of the last script line to Done. Your task is on the list.
+      - change the narration of the last script line to Done. Your new customer is on the list.
       - click outside the line, then click Re-render video
       - wait until the re-render finishes, then reload the page
     criteria: >-
       While re-rendering, the page says it is re-rendering and the buttons to re-render and re-record are disabled.
-      After it finishes and the page reloads, the last script line still reads Done. Your task is on the list.
+      After it finishes and the page reloads, the last script line still reads Done. Your new customer is on the list.
       The video still plays and the number of chapters did not change.
 
   - name: Voiceover off gives a captions-only video
     id: voiceover-off
     url: /
     steps:
-      - in App link, enter https://autoloom-app.vercel.app/api/demo
-      - in What should it show, enter Show how to add a task
-      - open Needs a login and enter email demo@acme.dev and password launchday
+      - in App link, enter https://autoloom-app.vercel.app/ledgerly
+      - in What should it show, enter Show how to add a customer
+      - open Needs a login and enter email demo@ledgerly.app and password launchday
       - turn Voiceover off and confirm the voice picker becomes disabled
       - click Record video and wait until the video is ready
     criteria: >-
@@ -63,7 +63,7 @@ testCases:
     id: share-link
     url: /
     steps:
-      - create a video for https://autoloom-app.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday
+      - create a video for https://autoloom-app.vercel.app/ledgerly with the goal Show how to add a customer, using email demo@ledgerly.app and password launchday
       - wait until the video is ready and click Copy share link
       - open the copied link in a fresh private window
     criteria: >-
@@ -75,11 +75,11 @@ testCases:
     id: stuck-hint
     url: /
     steps:
-      - in App link, enter https://autoloom-app.vercel.app/api/demo
-      - in What should it show, enter Show how to export the project to PDF
-      - open Needs a login and enter email demo@acme.dev and password launchday
+      - in App link, enter https://autoloom-app.vercel.app/ledgerly
+      - in What should it show, enter Show how to export all invoices to PDF
+      - open Needs a login and enter email demo@ledgerly.app and password launchday
       - click Record video and wait
-      - when the page asks where something is, type There is no export, just show the Tasks tab and submit
+      - when the page asks where something is, type There is no export, just open the Invoices page and submit
     criteria: >-
       Because the demo app has no PDF export, the page switches to a stuck state with a question and a hint field
       instead of failing silently or spinning forever. After the hint is submitted the page goes back to recording
@@ -92,7 +92,7 @@ testCases:
       - in App link, enter not a link
       - in What should it show, enter Show the dashboard
       - click Record video
-      - change App link to https://autoloom-app.vercel.app/api/demo, clear What should it show, and click Record video
+      - change App link to https://autoloom-app.vercel.app/ledgerly, clear What should it show, and click Record video
     criteria: >-
       The bad link is rejected on the create page with a readable message that tells the user what to fix, and no
       video is created. An empty goal is also blocked before submitting. No raw error text or stack trace is shown.
@@ -101,7 +101,7 @@ testCases:
     id: library
     url: /library
     steps:
-      - if the list is empty, click New video and create one for https://autoloom-app.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday, then go back to Your videos
+      - if the list is empty, click New video and create one for https://autoloom-app.vercel.app/ledgerly with the goal Show how to add a customer, using email demo@ledgerly.app and password launchday, then go back to Your videos
       - click the first video in the list
     criteria: >-
       Your videos lists each video with its title, length or status, and the app's address. Clicking a video opens

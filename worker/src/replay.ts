@@ -43,7 +43,7 @@ export async function recordTake(
           y: box.y + box.height / 2
         });
         await page.waitForTimeout(800);
-        await page.evaluate((elementBox) => window.__autoloomOverlay?.ring(elementBox), box);
+        await target.evaluate((element) => window.__autoloomOverlay?.ringElement(element));
         await page.waitForTimeout(300);
       }
       await performStep(target, step, credentials, typingDelayMilliseconds);
@@ -66,6 +66,10 @@ export async function recordTake(
 
 declare global {
   interface Window {
-    __autoloomOverlay?: { moveTo: (x: number, y: number) => void; ring: (box: unknown) => void };
+    __autoloomOverlay?: {
+      moveTo: (x: number, y: number) => void;
+      ring: (box: unknown) => void;
+      ringElement: (element: Element) => void;
+    };
   }
 }

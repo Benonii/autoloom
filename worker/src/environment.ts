@@ -9,6 +9,8 @@ export const environment = {
   workerSecret: readRequired('WORKER_SECRET'),
   openAIKey: process.env.OPENAI_API_KEY ?? '',
   plannerModel: process.env.OPENAI_MODEL ?? 'gpt-5.4-mini',
+  elevenLabsKey: process.env.ELEVENLABS_API_KEY ?? '',
+  elevenLabsModel: process.env.ELEVENLABS_MODEL ?? 'eleven_multilingual_v2',
   speechModel: process.env.OPENAI_SPEECH_MODEL ?? 'gpt-4o-mini-tts',
   outputDirectory: process.env.AUTOLOOM_OUTPUT ?? new URL('../output', import.meta.url).pathname,
   isHeadless: process.env.AUTOLOOM_HEADFUL !== '1'

@@ -11,6 +11,23 @@ window.__autoloomOverlay = {
     this.cursor = cursor;
   },
   moveTo(x, y) { this.ensure(); this.cursor.style.transform = 'translate(' + x + 'px,' + y + 'px)'; },
+  ringElement(element) {
+    const ring = document.createElement('div');
+    ring.style.cssText = 'position:fixed;z-index:2147483646;pointer-events:none;border:3px solid #2dd4bf;border-radius:12px;box-shadow:0 0 0 6px rgba(45,212,191,0.25);transition:opacity 300ms';
+    document.documentElement.appendChild(ring);
+    let isActive = true;
+    const follow = () => {
+      if (!isActive) return;
+      const box = element.getBoundingClientRect();
+      ring.style.left = (box.left - 6) + 'px';
+      ring.style.top = (box.top - 6) + 'px';
+      ring.style.width = (box.width + 12) + 'px';
+      ring.style.height = (box.height + 12) + 'px';
+      requestAnimationFrame(follow);
+    };
+    follow();
+    setTimeout(() => { ring.style.opacity = '0'; setTimeout(() => { isActive = false; ring.remove(); }, 300); }, 1200);
+  },
   ring(box) {
     const ring = document.createElement('div');
     ring.style.cssText = 'position:fixed;z-index:2147483646;pointer-events:none;border:3px solid #2dd4bf;border-radius:12px;box-shadow:0 0 0 6px rgba(45,212,191,0.25);transition:opacity 300ms;left:' + (box.x - 6) + 'px;top:' + (box.y - 6) + 'px;width:' + (box.width + 12) + 'px;height:' + (box.height + 12) + 'px';
