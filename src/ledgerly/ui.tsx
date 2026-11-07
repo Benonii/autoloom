@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-[#15803d] text-white hover:bg-[#166534]',
+  primary: 'bg-[#c2410c] text-white hover:bg-[#9a3412]',
   secondary: 'border border-[#e2e8f0] bg-white text-[#0f172a] hover:bg-[#f8fafc]',
   ghost: 'text-[#475569] hover:bg-[#f1f5f9]',
   danger: 'bg-[#dc2626] text-white hover:bg-[#b91c1c]'
@@ -81,7 +81,7 @@ export function TextField({
         value={value}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className='rounded-lg border border-[#cbd5e1] px-3 py-2 text-[#0f172a] outline-none focus:border-[#15803d] focus:ring-2 focus:ring-[#bbf7d0]'
+        className='rounded-lg border border-[#cbd5e1] px-3 py-2 text-[#0f172a] outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#fed7aa]'
       />
     </label>
   );

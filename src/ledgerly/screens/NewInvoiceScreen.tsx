@@ -75,7 +75,7 @@ export function NewInvoiceScreen() {
       <section className='rounded-2xl border border-[#e2e8f0] bg-white p-5'>
         <h2 className='mb-3 font-bold'>Customer</h2>
         {customer ? (
-          <div className='flex items-center justify-between rounded-xl bg-[#f0fdf4] p-3'>
+          <div className='flex items-center justify-between rounded-xl bg-[#fff7ed] p-3'>
             <div>
               <p className='font-semibold'>{customer.company}</p>
               <p className='text-sm text-[#475569]'>
@@ -194,7 +194,7 @@ export function NewInvoiceScreen() {
                 role='radio'
                 aria-checked={terms === option}
                 onClick={() => setTerms(option)}
-                className={`rounded-lg border px-3 py-1.5 text-sm font-semibold ${terms === option ? 'border-[#15803d] bg-[#f0fdf4] text-[#166534]' : 'border-[#e2e8f0]'}`}
+                className={`rounded-lg border px-3 py-1.5 text-sm font-semibold ${terms === option ? 'border-[#c2410c] bg-[#fff7ed] text-[#9a3412]' : 'border-[#e2e8f0]'}`}
               >
                 {option}
               </button>
@@ -207,7 +207,7 @@ export function NewInvoiceScreen() {
               aria-checked={hasTax}
               aria-label='Add sales tax'
               onClick={() => setHasTax(!hasTax)}
-              className={`relative h-6 w-11 rounded-full transition-colors ${hasTax ? 'bg-[#15803d]' : 'bg-[#cbd5e1]'}`}
+              className={`relative h-6 w-11 rounded-full transition-colors ${hasTax ? 'bg-[#c2410c]' : 'bg-[#cbd5e1]'}`}
             >
               <span
                 className={`absolute top-0.5 size-5 rounded-full bg-white transition-all ${hasTax ? 'left-[1.375rem]' : 'left-0.5'}`}

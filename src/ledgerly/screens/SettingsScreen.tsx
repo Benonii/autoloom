@@ -28,7 +28,7 @@ export function SettingsScreen({ tab }: { tab: string }) {
             role='tab'
             aria-selected={tab === item.id}
             href={`#/settings/${item.id}`}
-            className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold ${tab === item.id ? 'border-[#15803d] text-[#166534]' : 'border-transparent text-[#64748b]'}`}
+            className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold ${tab === item.id ? 'border-[#c2410c] text-[#9a3412]' : 'border-transparent text-[#64748b]'}`}
           >
             {item.label}
           </a>
@@ -96,7 +96,7 @@ function TeamTab() {
                   role='radio'
                   aria-checked={role === option.role}
                   onClick={() => setRole(option.role)}
-                  className={`rounded-xl border p-3 text-left ${role === option.role ? 'border-[#15803d] bg-[#f0fdf4]' : 'border-[#e2e8f0]'}`}
+                  className={`rounded-xl border p-3 text-left ${role === option.role ? 'border-[#c2410c] bg-[#fff7ed]' : 'border-[#e2e8f0]'}`}
                 >
                   <span className='block text-sm font-bold'>{option.role}</span>
                   <span className='block text-xs text-[#64748b]'>{option.description}</span>

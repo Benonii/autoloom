@@ -27,7 +27,7 @@ export function SignInScreen() {
         className='flex w-full max-w-sm flex-col gap-4 rounded-2xl border border-[#e2e8f0] bg-white p-8 shadow-sm'
       >
         <p className='flex items-center gap-2 text-lg font-extrabold'>
-          <span className='grid size-7 place-items-center rounded-lg bg-[#15803d] text-sm text-white'>L</span>
+          <span className='grid size-7 place-items-center rounded-lg bg-[#c2410c] text-sm text-white'>L</span>
           Ledgerly
         </p>
         <h1 className='text-2xl font-bold'>Sign in to your workspace</h1>
