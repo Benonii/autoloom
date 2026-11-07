@@ -40,11 +40,13 @@ testCases:
     steps:
       - create a video for https://autoloom-app.vercel.app/ledgerly with the goal Show how to add a customer, using email demo@ledgerly.app and password launchday
       - wait until the video is ready
+      - clear all text from the first script line, then click outside it
       - change the narration of the last script line to Done. Your new customer is on the list.
       - click outside the line, then click Re-render video
       - wait until the re-render finishes, then reload the page
     criteria: >-
-      While re-rendering, the page says it is re-rendering and the buttons to re-render and re-record are disabled.
+      Clearing the first line shows a readable message under it saying narration cannot be empty, and after a reload
+      the first line still has its original text. While re-rendering, the page says it is re-rendering and the buttons to re-render and re-record are disabled.
       After it finishes and the page reloads, the last script line still reads Done. Your new customer is on the list.
       The video still plays and the number of chapters did not change.
 
@@ -68,10 +70,12 @@ testCases:
       - create a video for https://autoloom-app.vercel.app/ledgerly with the goal Show how to add a customer, using email demo@ledgerly.app and password launchday
       - wait until the video is ready and click Copy share link
       - open the copied link in a fresh private window
+      - in the same private window, open the owner page by changing /share/ in the address to /videos/
     criteria: >-
       The share page loads without signing in and shows the video title, a playable video, Chapters, and a
       Transcript with the same lines as the script. It shows no edit controls (no Re-render, Re-record, or editable
-      script).
+      script). The owner page in the private window says the video was not found and shows no video, script, or
+      edit controls.
 
   - name: Agent asks for a hint when it gets stuck
     id: stuck-hint
@@ -81,7 +85,8 @@ testCases:
       - in What should it show, enter Show how to export all invoices to PDF
       - open Needs a login and enter email demo@ledgerly.app and password launchday
       - click Record video and wait
-      - when the page asks where something is, type There is no export, just open the Invoices page and submit
+      - when the page asks where something is, click the submit button with the hint field empty
+      - then type There is no export, just open the Invoices page and submit
     criteria: >-
       Because the demo app has no PDF export, the page switches to a stuck state with a question and a hint field
       instead of failing silently or spinning forever. After the hint is submitted the page goes back to recording
@@ -96,9 +101,11 @@ testCases:
       - in What should it show, enter Show the dashboard
       - click Record video
       - change App link to https://autoloom-app.vercel.app/ledgerly, clear What should it show, and click Record video
+      - in What should it show, enter the sentence Show the dashboard and every report on it. repeated 15 times, then click Record video
     criteria: >-
       The bad link is rejected on the create page with a readable message that tells the user what to fix, and no
-      video is created. An empty goal is also blocked before submitting. No raw error text or stack trace is shown.
+      video is created. An empty goal is also blocked before submitting. A goal over 500 characters is rejected
+      with a message that names the limit. Your videos in the library gains no new entries from these attempts. No raw error text or stack trace is shown.
 
   - name: Library lists videos and opens them
     id: library
@@ -109,3 +116,42 @@ testCases:
     criteria: >-
       Your videos lists each video with its title, length or status, and the app's address. Clicking a video opens
       its page. Videos that are still recording show a Recording badge instead of a length.
+
+  - name: Wrong login password is not passed off as a finished demo
+    id: wrong-password
+    url: /
+    steps:
+      - in App link, enter https://autoloom-app.vercel.app/ledgerly
+      - in What should it show, enter Show how to add a customer
+      - open Needs a login and enter email demo@ledgerly.app and password notthepassword
+      - click Record video and wait up to 4 minutes
+      - if the page asks a question, read it and do not answer
+    criteria: >-
+      The demo app rejects this password, so Autoloom must not finish with a video that claims a customer was added.
+      It either stops to ask for help with a question that mentions signing in or the login, or ends on a failure
+      page whose message says the sign-in did not work. It never shows the password notthepassword anywhere.
+
+  - name: A site that does not exist fails clearly
+    id: unreachable-site
+    only: true
+    url: /
+    steps:
+      - in App link, enter https://autoloom-site-that-does-not-exist.invalid
+      - in What should it show, enter Show the dashboard
+      - click Record video and wait up to 2 minutes
+    criteria: >-
+      Autoloom ends on a failure page within 2 minutes instead of recording forever. The message says in plain words
+      that the site could not be reached and shows no raw error codes such as net::ERR or stack traces. A Try again
+      button is offered.
+
+  - name: Broken video links show a friendly page
+    id: broken-links
+    only: true
+    url: /share/doesnotexist123
+    steps:
+      - read the page
+      - open /videos/doesnotexist123
+      - open /share/
+    criteria: >-
+      Each address shows a readable page saying the video is not available or not found, with no blank screen,
+      endless spinner, raw error text, or stack trace. The app header or a link offers a way back to Autoloom.
