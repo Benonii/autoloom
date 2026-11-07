@@ -1,14 +1,14 @@
 name: autoloom
 labels: [hackathon]
 run:
-  url: https://autoloom.vercel.app
+  url: https://autoloom-app.vercel.app
   credentials: none
 testCases:
   - name: Create a narrated video from a link and a goal
     id: create-video
     url: /
     steps:
-      - in App link, enter https://autoloom.vercel.app/api/demo
+      - in App link, enter https://autoloom-app.vercel.app/api/demo
       - in What should it show, enter Show how to add a task to the Launch project
       - open Needs a login and enter email demo@acme.dev and password launchday
       - leave Voiceover on and click Record video
@@ -22,7 +22,7 @@ testCases:
     id: password-never-shown
     url: /
     steps:
-      - in App link, enter https://autoloom.vercel.app/api/demo
+      - in App link, enter https://autoloom-app.vercel.app/api/demo
       - in What should it show, enter Show how to invite a teammate
       - open Needs a login and enter email demo@acme.dev and password launchday
       - click Record video and wait until the video is ready
@@ -36,7 +36,7 @@ testCases:
     id: edit-and-rerender
     url: /
     steps:
-      - create a video for https://autoloom.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday
+      - create a video for https://autoloom-app.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday
       - wait until the video is ready
       - change the narration of the last script line to Done. Your task is on the list.
       - click outside the line, then click Re-render video
@@ -50,7 +50,7 @@ testCases:
     id: voiceover-off
     url: /
     steps:
-      - in App link, enter https://autoloom.vercel.app/api/demo
+      - in App link, enter https://autoloom-app.vercel.app/api/demo
       - in What should it show, enter Show how to add a task
       - open Needs a login and enter email demo@acme.dev and password launchday
       - turn Voiceover off and confirm the voice picker becomes disabled
@@ -63,7 +63,7 @@ testCases:
     id: share-link
     url: /
     steps:
-      - create a video for https://autoloom.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday
+      - create a video for https://autoloom-app.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday
       - wait until the video is ready and click Copy share link
       - open the copied link in a fresh private window
     criteria: >-
@@ -75,7 +75,7 @@ testCases:
     id: stuck-hint
     url: /
     steps:
-      - in App link, enter https://autoloom.vercel.app/api/demo
+      - in App link, enter https://autoloom-app.vercel.app/api/demo
       - in What should it show, enter Show how to export the project to PDF
       - open Needs a login and enter email demo@acme.dev and password launchday
       - click Record video and wait
@@ -92,7 +92,7 @@ testCases:
       - in App link, enter not a link
       - in What should it show, enter Show the dashboard
       - click Record video
-      - change App link to https://autoloom.vercel.app/api/demo, clear What should it show, and click Record video
+      - change App link to https://autoloom-app.vercel.app/api/demo, clear What should it show, and click Record video
     criteria: >-
       The bad link is rejected on the create page with a readable message that tells the user what to fix, and no
       video is created. An empty goal is also blocked before submitting. No raw error text or stack trace is shown.
@@ -101,7 +101,7 @@ testCases:
     id: library
     url: /library
     steps:
-      - if the list is empty, click New video and create one for https://autoloom.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday, then go back to Your videos
+      - if the list is empty, click New video and create one for https://autoloom-app.vercel.app/api/demo with the goal Show how to add a task, using email demo@acme.dev and password launchday, then go back to Your videos
       - click the first video in the list
     criteria: >-
       Your videos lists each video with its title, length or status, and the app's address. Clicking a video opens
