@@ -23,11 +23,11 @@ export function ChapterList({ steps, activeStepID, onSelect }: ChapterListProps)
               step.id === activeStepID && 'bg-tint text-tint-foreground hover:bg-tint'
             )}
           >
-            <span className='w-9 shrink-0 text-xs tabular text-muted-foreground'>
+            <span className='w-9 shrink-0 text-[0.7rem] tabular text-muted-foreground'>
               {formatTimestamp(step.startSeconds)}
             </span>
             <StepKindIcon kind={step.kind} />
-            <span className='font-semibold'>{step.title}</span>
+            <span className='text-xs font-semibold'>{step.title}</span>
           </button>
         </li>
       ))}

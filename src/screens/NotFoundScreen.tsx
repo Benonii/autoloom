@@ -11,7 +11,7 @@ export function NotFoundScreen() {
         title='This page is not available'
         description='The link may be incomplete, or the video was deleted. Check the address, or head back to your videos.'
       />
-      <div className='flex flex-col gap-3 sm:flex-row'>
+      <div className='flex flex-col gap-3 sm:flex-row sm:justify-center'>
         <Button size='xl' className='rounded-2xl font-bold' render={<a href='/library' />}>
           <Film />
           Your videos

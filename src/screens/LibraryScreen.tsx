@@ -44,15 +44,15 @@ function VideoRow({ video }: { video: LibraryVideo }) {
     <li>
       <a href={`/videos/${video.id}`} className='flex flex-col gap-1 p-4 transition-colors hover:bg-muted sm:p-5'>
         <span className='flex flex-wrap items-center gap-2'>
-          <span className='text-sm font-bold sm:text-base'>{video.title}</span>
+          <span className='text-xs font-bold sm:text-sm'>{video.title}</span>
           {statusLabel && (
-            <Badge variant={needsAttention(video) ? 'warning' : 'secondary'} size='lg'>
+            <Badge variant={needsAttention(video) ? 'warning' : 'secondary'}>
               {isWorking(video) && <Spinner className='size-3' />}
               {statusLabel}
             </Badge>
           )}
         </span>
-        <span className='flex items-center gap-1.5 text-xs text-muted-foreground'>
+        <span className='flex items-center gap-1.5 text-[0.7rem] text-muted-foreground'>
           <Clock className='size-3.5' />
           {video.durationSeconds ? formatTimestamp(video.durationSeconds) : 'Not ready'}, {readHostname(video.appURL)}
         </span>
@@ -65,7 +65,7 @@ function VideoSection({ title, videos }: { title: string; videos: LibraryVideo[]
   if (videos.length === 0) return null;
   return (
     <section className='flex flex-col gap-3'>
-      <h2 className='text-sm font-bold text-muted-foreground'>
+      <h2 className='text-center text-xs font-bold text-muted-foreground'>
         {title} ({videos.length})
       </h2>
       <ul className='flex flex-col divide-y rounded-3xl border bg-card'>
@@ -84,17 +84,19 @@ export function LibraryScreen() {
   const finishedVideos = videos?.filter((video) => !activeStatuses.has(video.status)) ?? [];
   return (
     <AppShell isCreateHidden>
-      <div className='mb-8 flex flex-wrap items-end justify-between gap-4 sm:mb-10'>
-        <h1 className='text-xl font-bold leading-[1.1] tracking-[-0.03em] sm:text-3xl'>Your videos</h1>
+      <div className='mb-8 flex flex-col items-center gap-4 text-center sm:mb-10'>
+        <h1 className='text-lg font-bold leading-[1.1] tracking-[-0.03em] sm:text-2xl'>Your videos</h1>
         <Button size='xl' className='rounded-2xl font-bold' render={<a href='/' />}>
           <Plus />
           New video
         </Button>
       </div>
       {videos?.length === 0 && (
-        <p className='rounded-3xl border bg-card p-6 text-muted-foreground'>No videos yet. Make your first one.</p>
+        <p className='mx-auto max-w-3xl rounded-3xl border bg-card p-6 text-center text-muted-foreground'>
+          No videos yet. Make your first one.
+        </p>
       )}
-      <div className='flex flex-col gap-8'>
+      <div className='mx-auto flex max-w-3xl flex-col gap-8'>
         <VideoSection title='In progress' videos={activeVideos} />
         <VideoSection title='Finished' videos={finishedVideos} />
       </div>

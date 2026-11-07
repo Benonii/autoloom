@@ -53,7 +53,7 @@ export function StuckScreen({ video, steps }: VideoScreenProps) {
           </BrowserFrame>
           <form onSubmit={submit} className='flex flex-col gap-4 rounded-3xl border bg-card p-5 sm:p-6'>
             <Field>
-              <FieldLabel className='text-sm font-bold sm:text-sm'>
+              <FieldLabel className='text-xs font-bold sm:text-xs'>
                 <Lightbulb className='size-4 text-primary' />
                 Where is it now?
               </FieldLabel>
@@ -64,12 +64,12 @@ export function StuckScreen({ video, steps }: VideoScreenProps) {
                 placeholder='It moved under the Share button'
                 value={hint}
                 onChange={(event) => setHint(event.target.value)}
-                className='text-sm'
+                className='text-xs'
               />
               <FieldDescription>The agent tries again with your hint. Finished steps are kept.</FieldDescription>
             </Field>
             {errorMessage && (
-              <p role='alert' className='text-xs font-semibold text-destructive'>
+              <p role='alert' className='text-[0.7rem] font-semibold text-destructive'>
                 {errorMessage}
               </p>
             )}

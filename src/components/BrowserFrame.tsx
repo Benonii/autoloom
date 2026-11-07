@@ -24,12 +24,12 @@ export function BrowserFrame({ url, isLive = false, children, className }: Brows
           <span className='size-2.5 rounded-full bg-border' />
           <span className='size-2.5 rounded-full bg-border' />
         </div>
-        <div className='flex min-w-0 flex-1 items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs text-muted-foreground'>
+        <div className='flex min-w-0 flex-1 items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[0.7rem] text-muted-foreground'>
           <Lock className='size-3 shrink-0' />
           <span className='truncate'>{url}</span>
         </div>
         {isLive && (
-          <span className='flex shrink-0 items-center gap-2 rounded-full bg-foreground px-3 py-1 text-xs font-bold text-white'>
+          <span className='flex shrink-0 items-center gap-2 rounded-full bg-foreground px-3 py-1 text-[0.7rem] font-bold text-white'>
             <span className='size-2 rounded-full bg-glow animate-[live-pulse_1.6s_ease-in-out_infinite]' />
             Live
           </span>

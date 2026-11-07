@@ -23,7 +23,7 @@ export function ShareScreen({ videoID }: ShareScreenProps) {
   if (video === undefined || steps === undefined) return null;
   if (video === null || !video.videoURL) {
     return (
-      <div className='mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-12'>
+      <div className='mx-auto max-w-5xl px-4 py-6 text-sm sm:px-8 sm:py-12'>
         <PageTitle title='This video is not available' description='The link may be wrong, or the video was deleted.' />
         <a href='/' className='font-bold text-foreground underline underline-offset-4'>
           Go to Autoloom
@@ -42,9 +42,9 @@ export function ShareScreen({ videoID }: ShareScreenProps) {
   }
 
   return (
-    <div className='mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-12'>
-      <h1 className='text-xl font-bold leading-[1.1] tracking-[-0.03em] sm:text-3xl'>{video.title}</h1>
-      <p className='mb-6 mt-2 text-muted-foreground sm:mb-8'>
+    <div className='mx-auto max-w-5xl px-4 py-6 text-sm sm:px-8 sm:py-12'>
+      <h1 className='text-center text-lg font-bold leading-[1.1] tracking-[-0.03em] sm:text-2xl'>{video.title}</h1>
+      <p className='mb-6 mt-2 text-center text-muted-foreground sm:mb-8'>
         A {formatTimestamp(video.durationSeconds ?? 0)} walkthrough of {readHostname(video.appURL)}
       </p>
       <div className='relative isolate overflow-hidden rounded-[2rem] p-3 sm:p-6'>
@@ -59,23 +59,23 @@ export function ShareScreen({ videoID }: ShareScreenProps) {
       </div>
       <div className='mt-8 grid gap-8 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]'>
         <section aria-labelledby='share-chapters'>
-          <h2 id='share-chapters' className='mb-2 px-3 text-sm font-bold'>
+          <h2 id='share-chapters' className='mb-2 px-3 text-xs font-bold'>
             Chapters
           </h2>
           <ChapterList steps={steps} activeStepID={activeStepID} onSelect={seekTo} />
         </section>
         <section aria-labelledby='share-transcript'>
-          <h2 id='share-transcript' className='mb-2 text-sm font-bold'>
+          <h2 id='share-transcript' className='mb-2 text-xs font-bold'>
             Transcript
           </h2>
-          <div className='flex flex-col gap-3 leading-relaxed text-muted-foreground'>
+          <div className='flex flex-col gap-3 text-xs leading-relaxed text-muted-foreground'>
             {steps.map((step) => (
               <p key={step.id}>{step.narration}</p>
             ))}
           </div>
         </section>
       </div>
-      <p className='mt-12 text-xs text-muted-foreground'>
+      <p className='mt-12 text-[0.7rem] text-muted-foreground'>
         Made with{' '}
         <a href='/' className='font-bold text-foreground underline underline-offset-4'>
           Autoloom

@@ -71,7 +71,7 @@ export function LoginLinkScreen({ videoID }: LoginLinkScreenProps) {
       />
       <form
         onSubmit={submit}
-        className='flex max-w-xl flex-col gap-5 rounded-3xl border bg-card p-4 shadow-[0_20px_40px_-28px_rgb(24_24_27/0.45)] sm:p-7'
+        className='mx-auto flex max-w-xl flex-col gap-5 rounded-3xl border bg-card p-4 shadow-[0_20px_40px_-28px_rgb(24_24_27/0.45)] sm:p-7'
       >
         <Field>
           <FieldLabel className='font-bold'>
@@ -86,7 +86,7 @@ export function LoginLinkScreen({ videoID }: LoginLinkScreenProps) {
             autoComplete='off'
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className='*:text-sm'
+            className='*:text-xs'
           />
         </Field>
         <Field>
@@ -99,19 +99,19 @@ export function LoginLinkScreen({ videoID }: LoginLinkScreenProps) {
             autoComplete='new-password'
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className='*:text-sm'
+            className='*:text-xs'
           />
         </Field>
-        <p className='flex gap-2 rounded-2xl bg-muted p-3.5 text-xs leading-relaxed text-muted-foreground'>
+        <p className='flex gap-2 rounded-2xl bg-muted p-3.5 text-[0.7rem] leading-relaxed text-muted-foreground'>
           <ShieldCheck className='mt-0.5 size-4 shrink-0 text-primary' />
           This goes straight to Autoloom, encrypted. Your AI agent never sees it, and it never shows up in the video.
         </p>
         {errorMessage && (
-          <p role='alert' className='rounded-2xl bg-[#fff1e8] px-4 py-3 text-[0.85rem] font-semibold text-destructive'>
+          <p role='alert' className='rounded-2xl bg-[#fff1e8] px-4 py-3 text-xs font-semibold text-destructive'>
             {errorMessage}
           </p>
         )}
-        <Button type='submit' size='xl' disabled={isSubmitting} className='h-12 rounded-2xl text-sm font-bold'>
+        <Button type='submit' size='xl' disabled={isSubmitting} className='h-12 rounded-2xl text-xs font-bold'>
           {isSubmitting ? 'Starting' : 'Start recording'}
         </Button>
       </form>

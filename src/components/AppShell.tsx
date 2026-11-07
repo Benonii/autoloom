@@ -10,9 +10,9 @@ interface AppShellProps {
 
 export function AppShell({ children, isCreateHidden = false }: AppShellProps) {
   return (
-    <div className='min-h-dvh'>
+    <div className='min-h-dvh text-sm'>
       <header className='mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-8 sm:py-6'>
-        <a href='/library' className='flex items-center gap-2 text-sm font-bold sm:text-sm tracking-tight'>
+        <a href='/library' className='flex items-center gap-2 text-xs font-bold sm:text-xs tracking-tight'>
           <span className='grid size-8 place-items-center rounded-xl bg-primary text-white'>
             <svg aria-hidden='true' width='14' height='14' viewBox='0 0 14 14'>
               <path d='M3 2l9 5-9 5z' fill='currentColor' />

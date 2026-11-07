@@ -18,10 +18,12 @@ export function FailedScreen({ video }: VideoScreenProps) {
         title='We could not make this video'
         description={video.errorMessage ?? 'Something went wrong while recording.'}
       />
-      <Button size='xl' className='rounded-2xl font-bold' onClick={() => rerecord({ deviceID, videoID: video.id })}>
-        <RotateCcw />
-        Try again
-      </Button>
+      <div className='flex justify-center'>
+        <Button size='xl' className='rounded-2xl font-bold' onClick={() => rerecord({ deviceID, videoID: video.id })}>
+          <RotateCcw />
+          Try again
+        </Button>
+      </div>
     </AppShell>
   );
 }

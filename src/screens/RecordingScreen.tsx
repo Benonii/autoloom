@@ -72,7 +72,7 @@ export function RecordingScreen({ video, steps }: VideoScreenProps) {
           </BrowserFrame>
         </div>
         <aside className='flex flex-col gap-4'>
-          <p aria-live='polite' className='px-3 text-sm font-bold sm:text-base'>
+          <p aria-live='polite' className='px-3 text-xs font-bold sm:text-sm'>
             {progressLabel}
           </p>
           <StepList steps={walkthroughSteps} />

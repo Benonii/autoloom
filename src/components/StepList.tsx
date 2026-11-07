@@ -10,7 +10,7 @@ interface StepListProps {
 
 export function StepList({ steps }: StepListProps) {
   if (steps.length === 0) {
-    return <p className='rounded-2xl bg-muted px-4 py-3 text-xs text-muted-foreground'>Planning the steps</p>;
+    return <p className='rounded-2xl bg-muted px-4 py-3 text-[0.7rem] text-muted-foreground'>Planning the steps</p>;
   }
   return (
     <ol className='flex flex-col gap-1'>
@@ -28,7 +28,7 @@ export function StepList({ steps }: StepListProps) {
           <div className='min-w-0 pt-0.5'>
             <p
               className={cn(
-                'text-[0.8rem] font-semibold sm:text-[0.85rem]',
+                'text-[0.7rem] font-semibold sm:text-xs',
                 step.status === 'waiting' && 'text-muted-foreground',
                 step.status === 'active' && 'text-tint-foreground',
                 step.status === 'stuck' && 'text-destructive'
@@ -36,7 +36,9 @@ export function StepList({ steps }: StepListProps) {
             >
               {step.title}
             </p>
-            {step.status === 'active' && <p className='mt-1 text-xs text-tint-foreground/90'>Recording this step</p>}
+            {step.status === 'active' && (
+              <p className='mt-1 text-[0.7rem] text-tint-foreground/90'>Recording this step</p>
+            )}
           </div>
         </li>
       ))}
@@ -66,13 +68,13 @@ function StepMarker({ status, position }: StepMarkerProps) {
   }
   if (status === 'active') {
     return (
-      <span className='grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-white animate-[live-pulse_1.6s_ease-in-out_infinite]'>
+      <span className='grid size-7 shrink-0 place-items-center rounded-full bg-primary text-[0.7rem] font-bold text-white animate-[live-pulse_1.6s_ease-in-out_infinite]'>
         {position}
       </span>
     );
   }
   return (
-    <span className='grid size-7 shrink-0 place-items-center rounded-full border text-xs font-semibold text-muted-foreground tabular'>
+    <span className='grid size-7 shrink-0 place-items-center rounded-full border text-[0.7rem] font-semibold text-muted-foreground tabular'>
       {position}
     </span>
   );

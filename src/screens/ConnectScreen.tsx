@@ -28,13 +28,13 @@ function CopyBlock({ label, text }: CopyBlockProps) {
   return (
     <div className='flex flex-col gap-2'>
       <div className='flex items-center justify-between gap-2'>
-        <span className='text-xs font-bold'>{label}</span>
+        <span className='text-[0.7rem] font-bold'>{label}</span>
         <Button variant='outline' size='sm' onClick={copy} aria-label={`Copy ${label}`}>
           {isCopied ? <Check /> : <Copy />}
           {isCopied ? 'Copied' : 'Copy'}
         </Button>
       </div>
-      <code className='block overflow-x-auto whitespace-pre-wrap break-all rounded-2xl bg-muted p-3.5 font-mono text-xs leading-relaxed'>
+      <code className='block overflow-x-auto whitespace-pre-wrap break-all rounded-2xl bg-muted p-3.5 font-mono text-[0.7rem] leading-relaxed'>
         {text}
       </code>
     </div>
@@ -69,15 +69,15 @@ export function ConnectScreen() {
         title='Let your AI agent make videos'
         description='Connect Autoloom to Claude or any MCP client. Then just ask for a video, and your agent asks what it needs, records it, and sends you the link.'
       />
-      <div className='flex max-w-2xl flex-col gap-6'>
+      <div className='mx-auto flex max-w-2xl flex-col gap-6'>
         <section className='flex flex-col gap-4 rounded-3xl border bg-card p-4 sm:p-7'>
-          <h2 className='flex items-center gap-2 text-sm font-bold'>
+          <h2 className='flex items-center gap-2 text-xs font-bold'>
             <KeyRound className='size-5 text-primary' />
             1. Make a key
           </h2>
           {!agentKey && (
             <>
-              <p className='text-[0.85rem] leading-relaxed text-muted-foreground'>
+              <p className='text-xs leading-relaxed text-muted-foreground'>
                 Videos your agent makes show up in Your videos on this browser.
                 {hasKey && ' You already have a key. Making a new one turns the old one off.'}
               </p>
@@ -94,18 +94,18 @@ export function ConnectScreen() {
           {agentKey && (
             <>
               <CopyBlock label='Your key' text={agentKey} />
-              <p className='text-xs text-muted-foreground'>This is the only time it is shown. Keep it private.</p>
+              <p className='text-[0.7rem] text-muted-foreground'>This is the only time it is shown. Keep it private.</p>
             </>
           )}
           {errorMessage && (
-            <p role='alert' className='text-xs font-semibold text-destructive'>
+            <p role='alert' className='text-[0.7rem] font-semibold text-destructive'>
               {errorMessage}
             </p>
           )}
         </section>
         {agentKey && (
           <section className='flex flex-col gap-5 rounded-3xl border bg-card p-4 sm:p-7'>
-            <h2 className='flex items-center gap-2 text-sm font-bold'>
+            <h2 className='flex items-center gap-2 text-xs font-bold'>
               <Bot className='size-5 text-primary' />
               2. Add it to your agent
             </h2>
@@ -117,9 +117,9 @@ export function ConnectScreen() {
           </section>
         )}
         <section className='flex flex-col gap-3 rounded-3xl bg-muted p-4 sm:p-7'>
-          <h2 className='text-sm font-bold'>{agentKey ? '3. Ask for a video' : 'Then ask for a video'}</h2>
-          <p className='text-[0.85rem] italic leading-relaxed'>“{examplePrompt}”</p>
-          <p className='text-xs leading-relaxed text-muted-foreground'>
+          <h2 className='text-xs font-bold'>{agentKey ? '3. Ask for a video' : 'Then ask for a video'}</h2>
+          <p className='text-xs italic leading-relaxed'>“{examplePrompt}”</p>
+          <p className='text-[0.7rem] leading-relaxed text-muted-foreground'>
             If the app needs a login, your agent sends you a secure link to type it in. Passwords never pass through the
             AI.
           </p>
