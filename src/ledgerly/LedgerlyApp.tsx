@@ -35,7 +35,7 @@ function Shell() {
     <div className='flex min-h-dvh bg-[#f8fafc] text-[#0f172a]'>
       <aside className='hidden w-60 shrink-0 flex-col border-r border-[#e2e8f0] bg-white p-4 md:flex'>
         <p className='mb-8 flex items-center gap-2 px-2 text-lg font-extrabold'>
-          <span className='grid size-7 place-items-center rounded-lg bg-[#4f46e5] text-sm text-white'>L</span>
+          <span className='grid size-7 place-items-center rounded-lg bg-[#15803d] text-sm text-white'>L</span>
           Ledgerly
         </p>
         <nav aria-label='Main' className='flex flex-col gap-1'>
@@ -46,7 +46,7 @@ function Shell() {
                 key={item.route}
                 href={`#/${item.route}`}
                 aria-current={isActive ? 'page' : undefined}
-                className={`rounded-lg px-3 py-2 text-sm font-semibold ${isActive ? 'bg-[#eef2ff] text-[#4338ca]' : 'text-[#475569] hover:bg-[#f1f5f9]'}`}
+                className={`rounded-lg px-3 py-2 text-sm font-semibold ${isActive ? 'bg-[#f0fdf4] text-[#166534]' : 'text-[#475569] hover:bg-[#f1f5f9]'}`}
               >
                 {item.label}
               </a>
@@ -72,7 +72,7 @@ function Shell() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className='flex items-center gap-2 rounded-full border border-[#e2e8f0] py-1 pl-1 pr-3 text-sm font-semibold'
             >
-              <span className='grid size-7 place-items-center rounded-full bg-[#c7d2fe] text-[#3730a3]'>D</span>
+              <span className='grid size-7 place-items-center rounded-full bg-[#bbf7d0] text-[#14532d]'>D</span>
               Account
             </button>
             {isMenuOpen && (

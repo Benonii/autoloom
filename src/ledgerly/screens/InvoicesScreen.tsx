@@ -65,7 +65,7 @@ export function InvoicesScreen() {
             {invoices.map((invoice) => (
               <tr key={invoice.id} className='border-t border-[#f1f5f9]'>
                 <td className='px-5 py-3'>
-                  <a href={`#/invoices/${invoice.id}`} className='font-semibold text-[#4338ca] hover:underline'>
+                  <a href={`#/invoices/${invoice.id}`} className='font-semibold text-[#166534] hover:underline'>
                     {invoice.number}
                   </a>
                 </td>
