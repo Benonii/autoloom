@@ -10,3 +10,4 @@ worker/node_modules
 farm.d.ts
 worker/.env
 src/lib/api.generated.ts
+.convex

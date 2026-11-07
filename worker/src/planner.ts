@@ -54,6 +54,7 @@ interface PlannerInput {
   pageURL: string;
   takenSteps: PlannedStep[];
   elementList: string;
+  lastError: string | null;
 }
 
 export async function decideNextStep(input: PlannerInput): Promise<PlannerDecision> {
@@ -67,6 +68,7 @@ export async function decideNextStep(input: PlannerInput): Promise<PlannerDecisi
       : 'No login is available.',
     `Page: ${input.pageTitle} (${input.pageURL})`,
     `Steps taken:\n${takenList}`,
+    input.lastError ? `Your last action failed: ${input.lastError}. Pick a different element or approach.` : '',
     `Elements:\n${input.elementList || 'No interactive elements found'}`
   ]
     .filter(Boolean)

@@ -18,11 +18,21 @@ function collectInPage(limit: number): PageElement[] {
   for (const tagged of Array.from(document.querySelectorAll('[data-autoloom-number]'))) {
     tagged.removeAttribute('data-autoloom-number');
   }
-  const candidates = Array.from(document.querySelectorAll<HTMLElement>(interactiveSelector));
+  const openModals = Array.from(document.querySelectorAll<HTMLElement>('dialog[open], [aria-modal="true"]'));
+  const scope: ParentNode = openModals.at(-1) ?? document;
+  const candidates = Array.from(scope.querySelectorAll<HTMLElement>(interactiveSelector));
+  function isHittable(element: HTMLElement, rectangle: DOMRect): boolean {
+    const centerX = rectangle.left + rectangle.width / 2;
+    const centerY = rectangle.top + rectangle.height / 2;
+    if (centerY < 0 || centerY > window.innerHeight || centerX < 0 || centerX > window.innerWidth) return true;
+    const topElement = document.elementFromPoint(centerX, centerY);
+    return !topElement || element === topElement || element.contains(topElement) || topElement.contains(element);
+  }
   const visible = candidates.filter((element) => {
     const rectangle = element.getBoundingClientRect();
     const style = window.getComputedStyle(element);
     return (
+      isHittable(element, rectangle) &&
       rectangle.width > 2 &&
       rectangle.height > 2 &&
       style.visibility !== 'hidden' &&

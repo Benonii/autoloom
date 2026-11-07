@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 
 import {
   failJob,
@@ -88,7 +89,8 @@ export async function runJob(job: ClaimedJob): Promise<void> {
     }
     console.log(`Done in ${((Date.now() - startedAt) / 1000).toFixed(1)}s`);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'The worker hit an unknown error';
+    const rawMessage = error instanceof Error ? error.message : 'The worker hit an unknown error';
+    const message = (stripVTControlCharacters(rawMessage).split('\n')[0] ?? rawMessage).trim();
     console.error('Job failed', error);
     await failJob(job.jobID, message.slice(0, 300));
   }

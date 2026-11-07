@@ -119,9 +119,16 @@ export const saveSteps = mutation({
       .query('steps')
       .withIndex('by_video', (index) => index.eq('videoID', videoID))
       .collect();
-    await Promise.all(existingSteps.map((step) => context.db.delete(step._id)));
+    const existingByOrder = new Map(existingSteps.map((step) => [step.order, step]));
     await Promise.all(
-      steps.map((step, order) => context.db.insert('steps', { ...step, videoID, order, startSeconds: 0 }))
+      steps.map((step, order) => {
+        const existingStep = existingByOrder.get(order);
+        if (existingStep) return context.db.patch(existingStep._id, step);
+        return context.db.insert('steps', { ...step, videoID, order, startSeconds: 0 });
+      })
+    );
+    await Promise.all(
+      existingSteps.filter((step) => step.order >= steps.length).map((step) => context.db.delete(step._id))
     );
   }
 });

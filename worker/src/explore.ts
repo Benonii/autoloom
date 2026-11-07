@@ -13,6 +13,11 @@ const maximumSteps = 15;
 const hintWaitMilliseconds = 10 * 60 * 1000;
 export const viewport = { width: 1280, height: 720 };
 
+function readFirstLine(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  return (message.split('\n')[0] ?? message).slice(0, 160);
+}
+
 async function sendLiveFrame(page: Page, videoID: string): Promise<void> {
   try {
     const frame = await page.screenshot({ type: 'jpeg', quality: 60 });
@@ -42,6 +47,8 @@ export async function explore(
   const page = await browser.newPage({ viewport });
   const takenSteps: PlannedStep[] = [];
   let hint = video.hint;
+  let lastError: string | null = null;
+  let failureCount = 0;
   try {
     await page.goto(video.appURL, { waitUntil: 'domcontentloaded', timeout: 30_000 });
     await settle(page);
@@ -65,7 +72,8 @@ export async function explore(
         pageTitle: await page.title(),
         pageURL: page.url(),
         takenSteps,
-        elementList: describeElements(elements)
+        elementList: describeElements(elements),
+        lastError
       });
       if (decision.status === 'done') break;
       const element = elements.find((candidate) => candidate.number === decision.elementNumber);
@@ -93,7 +101,21 @@ export async function explore(
       };
       await saveSteps(video.id, [...takenSteps, step], takenSteps.length);
       const target = page.locator(`[data-autoloom-number="${element.number}"]`).first();
-      await performStep(target, step, credentials, 0);
+      try {
+        await performStep(target, step, credentials, 0);
+      } catch (error) {
+        failureCount += 1;
+        lastError = `could not ${step.kind} "${element.name}" (${readFirstLine(error)})`;
+        await saveSteps(video.id, takenSteps, takenSteps.length);
+        if (failureCount >= 3) {
+          await sendLiveFrame(page, video.id);
+          hint = await waitForHint(video, `I keep failing to ${step.title.toLowerCase()}. What should I try?`);
+          failureCount = 0;
+        }
+        continue;
+      }
+      lastError = null;
+      failureCount = 0;
       await settle(page);
       takenSteps.push(step);
       await saveSteps(video.id, takenSteps, takenSteps.length);
