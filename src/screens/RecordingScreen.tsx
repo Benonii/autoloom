@@ -3,6 +3,7 @@ import { useQuery } from 'convex/react';
 import { AppShell } from '@/components/AppShell';
 import { BrowserFrame } from '@/components/BrowserFrame';
 import { GoalCard } from '@/components/GoalCard';
+import { LiveFrame } from '@/components/LiveFrame';
 import { LiveGlow } from '@/components/LiveGlow';
 import { PageTitle } from '@/components/PageTitle';
 import { StepList } from '@/components/StepList';
@@ -62,11 +63,7 @@ export function RecordingScreen({ video, steps }: VideoScreenProps) {
             className='relative z-10'
           >
             {video.liveFrameURL ? (
-              <img
-                src={video.liveFrameURL}
-                alt='What the agent sees right now'
-                className='aspect-video w-full object-cover'
-              />
+              <LiveFrame frameURL={video.liveFrameURL} alt='What the agent sees right now' />
             ) : (
               <div className='grid aspect-video w-full place-items-center bg-muted px-6 text-center text-muted-foreground'>
                 {waitingLabel ?? 'Opening your app'}

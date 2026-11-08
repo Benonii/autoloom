@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { AppShell } from '@/components/AppShell';
 import { BrowserFrame } from '@/components/BrowserFrame';
+import { LiveFrame } from '@/components/LiveFrame';
 import { PageTitle } from '@/components/PageTitle';
 import { StepList } from '@/components/StepList';
 import { StopButton } from '@/components/StopButton';
@@ -46,11 +47,7 @@ export function StuckScreen({ video, steps }: VideoScreenProps) {
         <div className='flex flex-col gap-6'>
           <BrowserFrame url={readHostname(video.appURL)}>
             {video.liveFrameURL ? (
-              <img
-                src={video.liveFrameURL}
-                alt='Where the agent got stuck'
-                className='aspect-video w-full object-cover'
-              />
+              <LiveFrame frameURL={video.liveFrameURL} alt='Where the agent got stuck' />
             ) : (
               <div className='aspect-video w-full bg-muted' />
             )}
