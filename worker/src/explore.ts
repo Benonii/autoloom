@@ -95,7 +95,15 @@ export async function explore(
         elementList: describeElements(elements),
         lastError
       });
-      if (decision.status === 'done') break;
+      if (decision.status === 'done') {
+        const shouldWatch = /\bwatch\b/i.test(video.goal) && !takenSteps.some((step) => step.kind === 'wait');
+        if (!shouldWatch) break;
+        decision.status = 'act';
+        decision.action = 'wait';
+        decision.stepTitle = 'Watch it record';
+        decision.narration = 'Now sit back and watch it work.';
+        decision.text = String(readWaitSeconds(video.goal.match(/(\d+)\s*seconds?/i)?.[1]));
+      }
       if (decision.status === 'act' && decision.action === 'wait') {
         const step: PlannedStep = {
           kind: 'wait',
