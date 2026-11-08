@@ -33,7 +33,13 @@ export function StopButton({ videoID, label = 'Stop' }: StopButtonProps) {
 
   return (
     <div className='flex flex-col items-center gap-2'>
-      <Button variant='outline' size='lg' className='rounded-2xl font-bold' loading={isStopping} onClick={stopVideo}>
+      <Button
+        variant='outline'
+        size='lg'
+        className='rounded-2xl border-destructive font-bold text-destructive hover:bg-destructive/5'
+        loading={isStopping}
+        onClick={stopVideo}
+      >
         <Square />
         {label}
       </Button>
