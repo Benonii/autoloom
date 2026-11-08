@@ -36,7 +36,7 @@ export function StopButton({ videoID, label = 'Stop' }: StopButtonProps) {
       <Button
         variant='outline'
         size='lg'
-        className='rounded-2xl border-destructive font-bold text-destructive hover:bg-destructive/5'
+        className='rounded-2xl border-red-600 font-bold text-red-600 hover:bg-red-50'
         loading={isStopping}
         onClick={stopVideo}
       >
