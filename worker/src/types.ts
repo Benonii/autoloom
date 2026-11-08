@@ -1,4 +1,4 @@
-export type StepKind = 'navigate' | 'click' | 'type';
+export type StepKind = 'navigate' | 'click' | 'type' | 'wait';
 
 export type ValueSource = 'text' | 'email' | 'password';
 
@@ -68,7 +68,7 @@ export interface PlannerDecision {
   status: 'act' | 'done' | 'stuck';
   stepTitle: string;
   narration: string;
-  action: 'click' | 'type' | 'none';
+  action: 'click' | 'type' | 'wait' | 'none';
   elementNumber: number;
   valueSource: ValueSource;
   text: string;

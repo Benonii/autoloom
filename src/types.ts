@@ -4,7 +4,7 @@ import type { api } from '@/lib/convexApi';
 
 export type StepStatus = 'done' | 'active' | 'waiting' | 'stuck';
 
-export type StepKind = 'navigate' | 'click' | 'type';
+export type StepKind = 'navigate' | 'click' | 'type' | 'wait';
 
 export type PublicVideo = NonNullable<FunctionReturnType<typeof api.videos.get>>;
 

@@ -5,7 +5,7 @@ import { chromium } from 'playwright';
 import { findTarget, performStep, settle } from '@worker/actions';
 import { throwIfStopped } from '@worker/cancel';
 import { environment } from '@worker/environment';
-import { viewport } from '@worker/explore';
+import { readWaitSeconds, viewport, watch } from '@worker/explore';
 import { overlayScript } from '@worker/overlay';
 
 import type { Credentials, PlannedStep, Take, TakeSegment } from '@worker/types';
@@ -34,6 +34,12 @@ export async function recordTake(
     await page.waitForTimeout(600);
     for (const [stepIndex, step] of steps.entries()) {
       throwIfStopped();
+      if (step.kind === 'wait') {
+        const waitStartSeconds = elapsedSeconds();
+        await watch(page, readWaitSeconds(step.value));
+        segments.push({ stepIndex, startSeconds: waitStartSeconds, endSeconds: elapsedSeconds(), box: null });
+        continue;
+      }
       const target = await findTarget(page, step, 8000);
       if (!target) throw new Error(`Step ${stepIndex + 1} (“${step.title}”) is no longer on the page. Try Re-record.`);
       await target.scrollIntoViewIfNeeded().catch(() => undefined);

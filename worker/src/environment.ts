@@ -13,5 +13,6 @@ export const environment = {
   elevenLabsModel: process.env.ELEVENLABS_MODEL ?? 'eleven_multilingual_v2',
   speechModel: process.env.OPENAI_SPEECH_MODEL ?? 'gpt-4o-mini-tts',
   outputDirectory: process.env.AUTOLOOM_OUTPUT ?? new URL('../output', import.meta.url).pathname,
-  isHeadless: process.env.AUTOLOOM_HEADFUL !== '1'
+  isHeadless: process.env.AUTOLOOM_HEADFUL !== '1',
+  workerSlots: Math.max(1, Number.parseInt(process.env.WORKER_SLOTS ?? '1', 10) || 1)
 };

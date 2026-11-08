@@ -2,28 +2,36 @@ import { api, claimJob, liveClient, sendHeartbeat } from '@worker/convex';
 import { environment } from '@worker/environment';
 import { runJob } from '@worker/jobs';
 
-let isBusy = false;
-let pendingJobID: string | null = null;
+let latestJobID: string | null = null;
+let runningCount = 0;
+const claimingJobIDs = new Set<string>();
+const claimedJobIDs = new Set<string>();
 
-async function work(jobID: string): Promise<void> {
-  if (isBusy) {
-    pendingJobID = jobID;
+function pump(): void {
+  const jobID = latestJobID;
+  if (!jobID || runningCount >= environment.workerSlots || claimingJobIDs.has(jobID) || claimedJobIDs.has(jobID))
     return;
-  }
-  isBusy = true;
-  try {
-    const job = await claimJob(jobID);
-    if (job) await runJob(job);
-  } finally {
-    isBusy = false;
-    const nextJobID = pendingJobID;
-    pendingJobID = null;
-    if (nextJobID) void work(nextJobID);
-  }
+  runningCount += 1;
+  claimingJobIDs.add(jobID);
+  void (async () => {
+    try {
+      const job = await claimJob(jobID);
+      claimedJobIDs.add(jobID);
+      claimingJobIDs.delete(jobID);
+      if (job) await runJob(job);
+    } catch (error) {
+      console.error('Could not run the job', error);
+    } finally {
+      claimingJobIDs.delete(jobID);
+      runningCount -= 1;
+      pump();
+    }
+  })();
 }
 
 liveClient.onUpdate(api.worker.nextJob, { workerSecret: environment.workerSecret }, (job) => {
-  if (job) void work(job.id);
+  latestJobID = job?.id ?? null;
+  pump();
 });
 
 const heartbeatMilliseconds = 15_000;
@@ -35,4 +43,6 @@ function beat(): void {
 beat();
 setInterval(beat, heartbeatMilliseconds);
 
-console.log(`Autoloom worker listening on ${environment.convexURL}`);
+console.log(
+  `Autoloom worker listening on ${environment.convexURL} with ${environment.workerSlots} slot${environment.workerSlots === 1 ? '' : 's'}`
+);

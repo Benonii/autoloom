@@ -10,7 +10,7 @@ export const videoStatus = v.union(
   v.literal('failed')
 );
 
-export const stepKind = v.union(v.literal('navigate'), v.literal('click'), v.literal('type'));
+export const stepKind = v.union(v.literal('navigate'), v.literal('click'), v.literal('type'), v.literal('wait'));
 
 export const stepBox = v.object({ x: v.number(), y: v.number(), width: v.number(), height: v.number() });
 

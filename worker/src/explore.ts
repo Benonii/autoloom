@@ -40,6 +40,19 @@ async function waitForHint(video: JobVideo, question: string): Promise<string> {
   throw new Error('Nobody answered the agent’s question in time');
 }
 
+export function readWaitSeconds(text: string | undefined): number {
+  const seconds = Number.parseInt(text ?? '', 10);
+  return Number.isFinite(seconds) ? Math.min(Math.max(seconds, 5), 90) : 20;
+}
+
+export async function watch(page: Page, seconds: number): Promise<void> {
+  const endsAt = Date.now() + seconds * 1000;
+  while (Date.now() < endsAt) {
+    throwIfStopped();
+    await page.waitForTimeout(Math.min(1000, endsAt - Date.now()));
+  }
+}
+
 export async function explore(
   video: JobVideo,
   credentials: Credentials | null,
@@ -56,6 +69,10 @@ export async function explore(
     await settle(page);
     await sendLiveFrame(page, video.id);
     for (const knownStep of knownSteps) {
+      if (knownStep.kind === 'wait') {
+        takenSteps.push(knownStep);
+        continue;
+      }
       const target = await findTarget(page, knownStep, 5000);
       if (!target) break;
       await performStep(target, knownStep, credentials, 0);
@@ -79,6 +96,20 @@ export async function explore(
         lastError
       });
       if (decision.status === 'done') break;
+      if (decision.status === 'act' && decision.action === 'wait') {
+        const step: PlannedStep = {
+          kind: 'wait',
+          title: decision.stepTitle,
+          narration: decision.narration,
+          value: String(readWaitSeconds(decision.text))
+        };
+        await saveSteps(video.id, [...takenSteps, step], takenSteps.length);
+        await watch(page, readWaitSeconds(decision.text));
+        takenSteps.push(step);
+        await saveSteps(video.id, takenSteps, takenSteps.length);
+        await sendLiveFrame(page, video.id);
+        continue;
+      }
       const element = elements.find((candidate) => candidate.number === decision.elementNumber);
       if (decision.status === 'stuck' || !element || decision.action === 'none') {
         await sendLiveFrame(page, video.id);
