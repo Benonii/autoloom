@@ -49,7 +49,11 @@ async function speakWithElevenLabs(text: string, voiceID: string): Promise<Uint8
     {
       method: 'POST',
       headers: { 'xi-api-key': environment.elevenLabsKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, model_id: environment.elevenLabsModel })
+      body: JSON.stringify({
+        text,
+        model_id: environment.elevenLabsModel,
+        voice_settings: { stability: 0.35, similarity_boost: 0.75, style: 0.45, use_speaker_boost: true }
+      })
     }
   );
   if (!response.ok)
@@ -63,7 +67,8 @@ async function speakWithOpenAI(text: string, voiceID: string): Promise<Uint8Arra
     model: environment.speechModel,
     voice: openAIVoices[voiceID] ?? voiceID,
     input: text,
-    instructions: 'Friendly, clear product walkthrough narrator. Natural pace.',
+    instructions:
+      'Upbeat, playful, friendly product demo host talking to a friend. Smile in your voice, vary your pitch, natural conversational pace. Never flat or robotic.',
     response_format: 'pcm'
   });
   return new Uint8Array(await response.arrayBuffer());

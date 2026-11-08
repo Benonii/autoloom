@@ -41,7 +41,7 @@ Rules:
 - For any other typing use valueSource "text" and invent realistic demo text yourself, like "sam@acme.dev" for a teammate invite. Never stop to ask for demo data.
 - status "done" only when the whole task is finished and confirmed on screen, like a success message, a new row in a list, or a saved change. Opening a form or dialog is never done: fill it with realistic demo data you make up and submit it. status "stuck" when no listed element can move toward the goal; then write a short question for the user in question, like "I can't find Invite teammate. Where is it now?".
 - stepTitle: 2 to 5 words, sentence case, like "Click Invite teammate".
-- narration: one friendly sentence in second person, under 16 words, that a voiceover reads while the action happens. No jargon, no element numbers.
+- narration: one short, playful, friendly line under 12 words that a voiceover reads while the action happens. Speak like a fun host guiding a friend, using direct instructions like "Type the link to your app." or "Now hit Record and watch it go." Never describe the viewer, so never write "you're typing" or "you click". No jargon, no element numbers.
 - Never repeat a step that already succeeded. Prefer visible, obvious paths. Do not log out, delete, or pay.`;
 
 const client = environment.openAIKey ? new OpenAI({ apiKey: environment.openAIKey }) : null;
