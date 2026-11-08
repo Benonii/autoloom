@@ -252,3 +252,36 @@ export const heartbeat = mutation({
     else await context.db.insert('recorders', { lastSeenAt: Date.now() });
   }
 });
+
+export const readVideoFileURL = query({
+  args: { workerSecret: v.string(), videoID: v.id('videos') },
+  handler: async (context, { workerSecret, videoID }) => {
+    assertWorker(workerSecret);
+    const video = await context.db.get(videoID);
+    if (!video?.videoFileID) return null;
+    return context.storage.getUrl(video.videoFileID);
+  }
+});
+
+export const replaceVideoFile = mutation({
+  args: {
+    workerSecret: v.string(),
+    videoID: v.id('videos'),
+    videoFileID: v.id('_storage'),
+    durationSeconds: v.number()
+  },
+  handler: async (context, { workerSecret, videoID, videoFileID, durationSeconds }) => {
+    assertWorker(workerSecret);
+    const video = await context.db.get(videoID);
+    if (!video) throw new Error('This video was deleted');
+    if (video.videoFileID) await context.storage.delete(video.videoFileID);
+    await context.db.patch(videoID, { videoFileID, durationSeconds });
+    const steps = await context.db
+      .query('steps')
+      .withIndex('by_video', (index) => index.eq('videoID', videoID))
+      .collect();
+    for (const step of steps) {
+      if (step.startSeconds >= durationSeconds) await context.db.delete(step._id);
+    }
+  }
+});

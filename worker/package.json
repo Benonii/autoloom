@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "tsx --env-file-if-exists=.env src/index.ts",
-    "setup": "playwright install chromium"
+    "setup": "playwright install chromium",
+    "trim": "tsx --env-file-if-exists=.env src/trim.ts"
   },
   "dependencies": {
     "@remotion/bundler": "4.0.541",
