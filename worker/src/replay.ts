@@ -3,6 +3,7 @@ import path from 'node:path';
 import { chromium } from 'playwright';
 
 import { findTarget, performStep, settle } from '@worker/actions';
+import { throwIfStopped } from '@worker/cancel';
 import { environment } from '@worker/environment';
 import { viewport } from '@worker/explore';
 import { overlayScript } from '@worker/overlay';
@@ -32,6 +33,7 @@ export async function recordTake(
     await settle(page);
     await page.waitForTimeout(600);
     for (const [stepIndex, step] of steps.entries()) {
+      throwIfStopped();
       const target = await findTarget(page, step, 8000);
       if (!target) throw new Error(`Step ${stepIndex + 1} (“${step.title}”) is no longer on the page. Try Re-record.`);
       await target.scrollIntoViewIfNeeded().catch(() => undefined);

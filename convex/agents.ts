@@ -11,6 +11,7 @@ import {
   maximumGoalLength,
   normalizeURL,
   startRender,
+  stopVideo,
   toPublicVideo
 } from './videos';
 
@@ -198,6 +199,16 @@ export const rerender = mutation({
       voiceoverEnabled: args.voiceoverEnabled,
       voiceID: args.voiceID
     }).catch((error) => {
+      throw toReadableError(error);
+    });
+  }
+});
+
+export const stop = mutation({
+  args: { agentKey: v.string(), videoID: v.string() },
+  handler: async (context, args) => {
+    const deviceID = await readDevice(context, args.agentKey);
+    await stopVideo(context, deviceID, readVideoID(context, args.videoID)).catch((error) => {
       throw toReadableError(error);
     });
   }

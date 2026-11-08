@@ -9,13 +9,15 @@ import { useDeviceID } from '@/lib/hooks';
 
 import type { VideoScreenProps } from '@/types';
 
+const stoppedMessage = 'You stopped this video.';
+
 export function FailedScreen({ video }: VideoScreenProps) {
   const deviceID = useDeviceID();
   const rerecord = useMutation(api.videos.rerecord);
   return (
     <AppShell>
       <PageTitle
-        title='We could not make this video'
+        title={video.errorMessage === stoppedMessage ? 'Video stopped' : 'We could not make this video'}
         description={video.errorMessage ?? 'Something went wrong while recording.'}
       />
       <div className='flex justify-center'>

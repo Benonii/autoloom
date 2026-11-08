@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 
 import { findTarget, performStep, settle } from '@worker/actions';
+import { throwIfStopped } from '@worker/cancel';
 import { markStuck, readHint, saveLiveFrame, saveSteps } from '@worker/convex';
 import { collectElements, describeElements, resolveDurableSelector } from '@worker/elements';
 import { environment } from '@worker/environment';
@@ -31,6 +32,7 @@ async function waitForHint(video: JobVideo, question: string): Promise<string> {
   await markStuck(video.id, question);
   const startedAt = Date.now();
   while (Date.now() - startedAt < hintWaitMilliseconds) {
+    throwIfStopped();
     await new Promise((resolve) => setTimeout(resolve, 2000));
     const hint = await readHint(video.id);
     if (hint) return hint;
@@ -64,6 +66,7 @@ export async function explore(
     }
     if (takenSteps.length === knownSteps.length && knownSteps.length > 0) return takenSteps;
     while (takenSteps.length < maximumSteps) {
+      throwIfStopped();
       const elements = await collectElements(page);
       const decision = await decideNextStep({
         goal: video.goal,

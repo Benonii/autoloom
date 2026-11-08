@@ -2,9 +2,12 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 
+import { readJobSignal, runWithJobSignal } from '@worker/cancel';
 import {
+  api,
   failJob,
   finishJob,
+  liveClient,
   markRendering,
   openCredentials,
   readStepIDs,
@@ -18,6 +21,7 @@ import { recordTake } from '@worker/replay';
 import { narrate } from '@worker/voice';
 
 import type { ClaimedJob, Credentials, JobStep, PlannedStep, Take } from '@worker/types';
+import type { Id } from '../../convex/_generated/dataModel';
 
 function toPlannedStep(step: JobStep): PlannedStep {
   return {
@@ -75,7 +79,29 @@ async function produceVideo(
   await finishJob(job.jobID, videoFileID, Math.round(totalSeconds));
 }
 
+function watchForStop(jobID: string, controller: AbortController): () => void {
+  return liveClient.onUpdate(
+    api.worker.isJobRunning,
+    { workerSecret: environment.workerSecret, jobID: jobID as Id<'jobs'> },
+    (isRunning) => {
+      if (isRunning === false) controller.abort();
+    }
+  );
+}
+
 export async function runJob(job: ClaimedJob): Promise<void> {
+  const controller = new AbortController();
+  const stopWatching = watchForStop(job.jobID, controller);
+  const stopped = new Promise<void>((resolve) => controller.signal.addEventListener('abort', () => resolve()));
+  try {
+    await Promise.race([runWithJobSignal(controller.signal, () => performJob(job)), stopped]);
+    if (controller.signal.aborted) console.log('Job stopped by the user');
+  } finally {
+    stopWatching();
+  }
+}
+
+async function performJob(job: ClaimedJob): Promise<void> {
   const startedAt = Date.now();
   console.log(`Job ${job.kind} for ${job.video.appURL}: ${job.video.goal}`);
   try {
@@ -89,6 +115,7 @@ export async function runJob(job: ClaimedJob): Promise<void> {
     }
     console.log(`Done in ${((Date.now() - startedAt) / 1000).toFixed(1)}s`);
   } catch (error) {
+    if (readJobSignal()?.aborted) return;
     const rawMessage = error instanceof Error ? error.message : 'The worker hit an unknown error';
     const message = (stripVTControlCharacters(rawMessage).split('\n')[0] ?? rawMessage).trim();
     console.error('Job failed', error);

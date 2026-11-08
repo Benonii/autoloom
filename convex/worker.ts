@@ -1,13 +1,32 @@
 import { v } from 'convex/values';
 
 import { internal } from './_generated/api';
+import type { Id } from './_generated/dataModel';
 import { action, internalQuery, mutation, query } from './_generated/server';
+import type { QueryCtx } from './_generated/server';
 import { assertWorker } from './access';
 import { toFriendlyFailure } from './failures';
 import { stepBox, stepKind } from './schema';
 import { unseal } from './sealing';
 
 const staleJobMilliseconds = 10 * 60 * 1000;
+
+function readRunningJob(context: QueryCtx, videoID: Id<'videos'>) {
+  return context.db
+    .query('jobs')
+    .withIndex('by_video', (index) => index.eq('videoID', videoID))
+    .filter((query) => query.eq(query.field('status'), 'running'))
+    .first();
+}
+
+export const isJobRunning = query({
+  args: { workerSecret: v.string(), jobID: v.id('jobs') },
+  handler: async (context, { workerSecret, jobID }) => {
+    assertWorker(workerSecret);
+    const job = await context.db.get(jobID);
+    return job?.status === 'running';
+  }
+});
 
 export const nextJob = query({
   args: { workerSecret: v.string() },
@@ -93,7 +112,10 @@ export const saveLiveFrame = mutation({
   handler: async (context, { workerSecret, videoID, fileID }) => {
     assertWorker(workerSecret);
     const video = await context.db.get(videoID);
-    if (!video) return;
+    if (!video || !(await readRunningJob(context, videoID))) {
+      await context.storage.delete(fileID);
+      return;
+    }
     if (video.liveFrameFileID) await context.storage.delete(video.liveFrameFileID);
     await context.db.patch(videoID, { liveFrameFileID: fileID });
   }
@@ -116,6 +138,7 @@ export const saveSteps = mutation({
   },
   handler: async (context, { workerSecret, videoID, steps }) => {
     assertWorker(workerSecret);
+    if (!(await readRunningJob(context, videoID))) return;
     const existingSteps = await context.db
       .query('steps')
       .withIndex('by_video', (index) => index.eq('videoID', videoID))
@@ -155,6 +178,7 @@ export const markStuck = mutation({
     assertWorker(workerSecret);
     const video = await context.db.get(videoID);
     if (!video) throw new Error('This video was deleted');
+    if (!(await readRunningJob(context, videoID))) throw new Error('This video was stopped');
     await context.db.patch(videoID, { status: 'stuck', stuckQuestion: question, hint: undefined });
   }
 });
@@ -165,12 +189,7 @@ export const readHint = query({
     assertWorker(workerSecret);
     const video = await context.db.get(videoID);
     if (!video) throw new Error('This video was deleted');
-    const runningJob = await context.db
-      .query('jobs')
-      .withIndex('by_video', (index) => index.eq('videoID', videoID))
-      .filter((query) => query.eq(query.field('status'), 'running'))
-      .first();
-    if (!runningJob) throw new Error('This recording was restarted');
+    if (!(await readRunningJob(context, videoID))) throw new Error('This recording was stopped');
     return video.status === 'recording' ? (video.hint ?? null) : null;
   }
 });
@@ -181,6 +200,7 @@ export const markRendering = mutation({
     assertWorker(workerSecret);
     const video = await context.db.get(videoID);
     if (!video) throw new Error('This video was deleted');
+    if (!(await readRunningJob(context, videoID))) throw new Error('This video was stopped');
     await context.db.patch(videoID, { status: 'rendering' });
   }
 });

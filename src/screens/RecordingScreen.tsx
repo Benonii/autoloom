@@ -5,6 +5,7 @@ import { BrowserFrame } from '@/components/BrowserFrame';
 import { LiveGlow } from '@/components/LiveGlow';
 import { PageTitle } from '@/components/PageTitle';
 import { StepList } from '@/components/StepList';
+import { StopButton } from '@/components/StopButton';
 import { TealDither } from '@/components/TealDither';
 import { api } from '@/lib/convexApi';
 import { useNow } from '@/lib/hooks';
@@ -49,6 +50,9 @@ export function RecordingScreen({ video, steps }: VideoScreenProps) {
         title={isRendering ? 'Putting your video together' : 'Recording your video'}
         description={video.goal}
       />
+      <div className='mb-6 flex justify-center sm:mb-8'>
+        <StopButton videoID={video.id} label={waitingLabel ? 'Cancel' : 'Stop'} />
+      </div>
       <div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8'>
         <div className='relative isolate overflow-hidden rounded-[2rem] bg-deep p-3 sm:p-5'>
           <TealDither shape='dots' className='-z-20 opacity-30' />

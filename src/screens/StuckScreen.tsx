@@ -6,6 +6,7 @@ import { AppShell } from '@/components/AppShell';
 import { BrowserFrame } from '@/components/BrowserFrame';
 import { PageTitle } from '@/components/PageTitle';
 import { StepList } from '@/components/StepList';
+import { StopButton } from '@/components/StopButton';
 import { Button } from '@/components/ui/button';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -38,6 +39,9 @@ export function StuckScreen({ video, steps }: VideoScreenProps) {
   return (
     <AppShell>
       <PageTitle title={title} description={video.stuckQuestion ?? 'The agent could not find its next step.'} />
+      <div className='mb-6 flex justify-center sm:mb-8'>
+        <StopButton videoID={video.id} />
+      </div>
       <div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8'>
         <div className='flex flex-col gap-6'>
           <BrowserFrame url={readHostname(video.appURL)}>

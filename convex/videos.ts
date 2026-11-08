@@ -227,6 +227,45 @@ export const rerender = mutation({
     startRender(context, deviceID, videoID, { voiceoverEnabled, voiceID })
 });
 
+export const stoppedMessage = 'You stopped this video.';
+
+const stoppableStatuses = new Set(['waitingForLogin', 'recording', 'rendering', 'stuck']);
+
+export async function stopVideo(context: MutationCtx, deviceID: string, videoID: Id<'videos'>) {
+  const video = await readOwnedVideo(context, videoID, deviceID);
+  if (!stoppableStatuses.has(video.status)) throw new ConvexError('This video is not being made right now');
+  const jobs = await context.db
+    .query('jobs')
+    .withIndex('by_video', (index) => index.eq('videoID', videoID))
+    .collect();
+  await Promise.all(
+    jobs
+      .filter((job) => job.status === 'queued' || job.status === 'running')
+      .map((job) => context.db.patch(job._id, { status: 'failed' }))
+  );
+  if (video.videoFileID) {
+    await context.db.patch(videoID, {
+      status: 'ready',
+      stuckQuestion: undefined,
+      hint: undefined,
+      loginToken: undefined
+    });
+    return;
+  }
+  await context.db.patch(videoID, {
+    status: 'failed',
+    errorMessage: stoppedMessage,
+    stuckQuestion: undefined,
+    hint: undefined,
+    loginToken: undefined
+  });
+}
+
+export const stop = mutation({
+  args: { deviceID: v.string(), videoID: v.id('videos') },
+  handler: (context, { deviceID, videoID }) => stopVideo(context, deviceID, videoID)
+});
+
 export const rerecord = mutation({
   args: { deviceID: v.string(), videoID: v.id('videos') },
   handler: async (context, { deviceID, videoID }) => {

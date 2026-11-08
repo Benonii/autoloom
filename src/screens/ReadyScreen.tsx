@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { ChapterList } from '@/components/ChapterList';
 import { ScriptEditor } from '@/components/ScriptEditor';
+import { StopButton } from '@/components/StopButton';
 import { TealDither } from '@/components/TealDither';
 import { TealMesh } from '@/components/TealMesh';
 import { VideoPlayer } from '@/components/VideoPlayer';
@@ -93,6 +94,9 @@ export function ReadyScreen({ video, steps }: VideoScreenProps) {
         >
           <p className='font-bold'>Re-rendering with your changes</p>
           <p className='text-[0.7rem]'>Your share link keeps the old version until it’s done.</p>
+          <div className='sm:ml-auto'>
+            <StopButton videoID={video.id} />
+          </div>
         </div>
       )}
       <div className='grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]'>

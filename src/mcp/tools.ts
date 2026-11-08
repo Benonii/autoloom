@@ -284,6 +284,18 @@ const rerenderVideo: Tool = {
   }
 };
 
+const stopVideo: Tool = {
+  name: 'stop_video',
+  title: 'Stop a video',
+  description:
+    'Stops a video that is waiting, recording, stuck, or rendering, and frees the recorder. Use it when the user asks to stop or cancel, or when a take has clearly gone wrong.',
+  inputSchema: { type: 'object', properties: { video_id: videoIDProperty }, required: ['video_id'] },
+  run: async (input, { agentKey }) => {
+    await fetchMutation(api.agents.stop, { agentKey, videoID: readString(input, 'video_id') });
+    return { text: 'Stopped. The recorder is free for the next video.', data: { status: 'failed' } };
+  }
+};
+
 const listVideos: Tool = {
   name: 'list_videos',
   title: 'List my videos',
@@ -315,6 +327,7 @@ export const tools: Tool[] = [
   requestLogin,
   editScriptLine,
   rerenderVideo,
+  stopVideo,
   listVideos
 ];
 

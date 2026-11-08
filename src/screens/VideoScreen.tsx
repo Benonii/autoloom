@@ -2,6 +2,7 @@ import { useQuery } from 'convex/react';
 
 import { AppShell } from '@/components/AppShell';
 import { PageTitle } from '@/components/PageTitle';
+import { StopButton } from '@/components/StopButton';
 import { api } from '@/lib/convexApi';
 import { useDeviceID } from '@/lib/hooks';
 import { FailedScreen } from '@/screens/FailedScreen';
@@ -33,6 +34,7 @@ export function VideoScreen({ videoID }: VideoScreenRouteProps) {
           title='Waiting for a login'
           description='Open the secure login link your agent sent you. Recording starts as soon as you add it.'
         />
+        <StopButton videoID={video.id} label='Cancel' />
       </AppShell>
     );
   }

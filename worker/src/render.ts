@@ -1,6 +1,8 @@
 import path from 'node:path';
 import { bundle } from '@remotion/bundler';
-import { renderMedia, selectComposition } from '@remotion/renderer';
+import { makeCancelSignal, renderMedia, selectComposition } from '@remotion/renderer';
+
+import { readJobSignal, throwIfStopped } from '@worker/cancel';
 
 import type { Narration, Take, WalkthroughProps, WalkthroughSegment } from '@worker/types';
 
@@ -56,6 +58,17 @@ export async function renderWalkthrough(take: Take, narrations: Narration[], dir
   const serveUrl = await bundle({ entryPoint, publicDir: directory });
   const composition = await selectComposition({ serveUrl, id: 'Walkthrough', inputProps });
   const outputPath = path.join(directory, 'walkthrough.mp4');
-  await renderMedia({ composition, serveUrl, codec: 'h264', outputLocation: outputPath, inputProps, concurrency: 4 });
+  throwIfStopped();
+  const { cancelSignal, cancel } = makeCancelSignal();
+  readJobSignal()?.addEventListener('abort', cancel, { once: true });
+  await renderMedia({
+    composition,
+    serveUrl,
+    codec: 'h264',
+    outputLocation: outputPath,
+    inputProps,
+    concurrency: 4,
+    cancelSignal
+  });
   return { outputPath, segments, totalSeconds };
 }
