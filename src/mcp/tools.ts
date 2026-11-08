@@ -139,6 +139,11 @@ const recordVideo: Tool = {
         type: 'string',
         description: 'What the video should show, as one task, like "Show how to invite a teammate as an Accountant".'
       },
+      title: {
+        type: 'string',
+        description:
+          'A short name for the video, under 60 characters, like "Send an invoice in Ledgerly". Use it when the flow is long.'
+      },
       needs_login: { type: 'boolean', description: 'True if the flow needs the user to be signed in.' },
       voiceover: { type: 'boolean', description: 'Narrate the video out loud. Defaults to true.' },
       voice: { type: 'string', enum: voiceIDs, description: 'sarah is warm, george is steady, charlie is upbeat.' }
@@ -151,6 +156,7 @@ const recordVideo: Tool = {
       agentKey,
       appURL: readString(input, 'app_url'),
       goal: readString(input, 'flow'),
+      title: typeof input.title === 'string' && input.title.trim() ? input.title : undefined,
       needsLogin,
       voiceoverEnabled: readBoolean(input, 'voiceover', true),
       voiceID: readVoice(input)

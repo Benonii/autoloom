@@ -100,13 +100,14 @@ export const insert = internalMutation({
     voiceID: v.string(),
     sealedEmail: v.optional(v.string()),
     sealedPassword: v.optional(v.string()),
-    loginToken: v.optional(v.string())
+    loginToken: v.optional(v.string()),
+    title: v.optional(v.string())
   },
   handler: async (context, args) => {
     const hasCredentials = Boolean(args.sealedEmail && args.sealedPassword);
     const videoID = await context.db.insert('videos', {
       deviceID: args.deviceID,
-      title: readTitle(args.goal),
+      title: readTitle(args.title ?? args.goal),
       appURL: args.appURL,
       goal: args.goal,
       status: args.loginToken ? 'waitingForLogin' : 'recording',

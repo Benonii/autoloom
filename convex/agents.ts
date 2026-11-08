@@ -99,6 +99,7 @@ export const createVideo = action({
     agentKey: v.string(),
     appURL: v.string(),
     goal: v.string(),
+    title: v.optional(v.string()),
     needsLogin: v.boolean(),
     voiceoverEnabled: v.boolean(),
     voiceID: v.string()
@@ -120,6 +121,7 @@ export const createVideo = action({
       deviceID,
       appURL,
       goal,
+      title: args.title,
       voiceoverEnabled: args.voiceoverEnabled,
       voiceID: args.voiceID,
       loginToken: loginToken ?? undefined

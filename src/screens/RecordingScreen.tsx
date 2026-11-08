@@ -2,6 +2,7 @@ import { useQuery } from 'convex/react';
 
 import { AppShell } from '@/components/AppShell';
 import { BrowserFrame } from '@/components/BrowserFrame';
+import { GoalCard } from '@/components/GoalCard';
 import { LiveGlow } from '@/components/LiveGlow';
 import { PageTitle } from '@/components/PageTitle';
 import { StepList } from '@/components/StepList';
@@ -46,10 +47,8 @@ export function RecordingScreen({ video, steps }: VideoScreenProps) {
         : `Step ${Math.min(doneCount + 1, steps.length)} of ${steps.length}`;
   return (
     <AppShell>
-      <PageTitle
-        title={isRendering ? 'Putting your video together' : 'Recording your video'}
-        description={video.goal}
-      />
+      <PageTitle title={isRendering ? 'Putting your video together' : 'Recording your video'} />
+      <GoalCard goal={video.goal} />
       <div className='mb-6 flex justify-center sm:mb-8'>
         <StopButton videoID={video.id} label={waitingLabel ? 'Cancel' : 'Stop'} />
       </div>
