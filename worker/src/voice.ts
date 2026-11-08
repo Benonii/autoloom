@@ -69,12 +69,27 @@ async function speakWithOpenAI(text: string, voiceID: string): Promise<Uint8Arra
   return new Uint8Array(await response.arrayBuffer());
 }
 
-async function speak(text: string, voiceID: string, filePath: string): Promise<number> {
-  const pcm = environment.elevenLabsKey
-    ? await speakWithElevenLabs(text, voiceID)
-    : await speakWithOpenAI(text, voiceID);
+type Speaker = (text: string, voiceID: string) => Promise<Uint8Array>;
+
+async function speak(speaker: Speaker, text: string, voiceID: string, filePath: string): Promise<number> {
+  const pcm = await speaker(text, voiceID);
   await writeFile(filePath, wrapInWave(pcm));
   return pcm.byteLength / (sampleRate * bytesPerSample);
+}
+
+async function narrateWith(
+  speaker: Speaker,
+  texts: string[],
+  voiceID: string,
+  directory: string
+): Promise<Narration[]> {
+  const narrations: Narration[] = [];
+  for (const [stepIndex, text] of texts.entries()) {
+    const audioPath = path.join(directory, `voice-${stepIndex}.wav`);
+    const durationSeconds = await speak(speaker, text, voiceID, audioPath);
+    narrations.push({ stepIndex, text, audioPath, durationSeconds });
+  }
+  return narrations;
 }
 
 export async function narrate(
@@ -83,15 +98,20 @@ export async function narrate(
   voiceID: string,
   directory: string
 ): Promise<Narration[]> {
-  const narrations: Narration[] = [];
-  for (const [stepIndex, text] of texts.entries()) {
-    if (!voiceoverEnabled) {
-      narrations.push({ stepIndex, text, audioPath: null, durationSeconds: estimateReadingSeconds(text) });
-      continue;
-    }
-    const audioPath = path.join(directory, `voice-${stepIndex}.wav`);
-    const durationSeconds = await speak(text, voiceID, audioPath);
-    narrations.push({ stepIndex, text, audioPath, durationSeconds });
+  if (!voiceoverEnabled) {
+    return texts.map((text, stepIndex) => ({
+      stepIndex,
+      text,
+      audioPath: null,
+      durationSeconds: estimateReadingSeconds(text)
+    }));
   }
-  return narrations;
+  if (!environment.elevenLabsKey) return narrateWith(speakWithOpenAI, texts, voiceID, directory);
+  try {
+    return await narrateWith(speakWithElevenLabs, texts, voiceID, directory);
+  } catch (error) {
+    if (!client) throw error;
+    console.warn('ElevenLabs failed, using OpenAI voices for this video', error);
+    return narrateWith(speakWithOpenAI, texts, voiceID, directory);
+  }
 }
