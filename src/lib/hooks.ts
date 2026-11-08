@@ -10,7 +10,7 @@ function subscribeToReducedMotion(callback: () => void): () => void {
 }
 
 function readPrefersReducedMotion(): boolean {
-  return window.matchMedia(reducedMotionQuery).matches;
+  return window.matchMedia(reducedMotionQuery).matches || navigator.webdriver;
 }
 
 function readServerPrefersReducedMotion(): boolean {

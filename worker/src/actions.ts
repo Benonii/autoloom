@@ -44,12 +44,17 @@ export async function performStep(
 
 const maximumTypingAttempts = 3;
 const retypeWaitMilliseconds = 1000;
+const minimumTypingTimeoutMilliseconds = 30_000;
+const typingTimeoutPerCharacterMilliseconds = 1000;
 
 async function typeText(locator: Locator, text: string, typingDelayMilliseconds: number): Promise<void> {
   await locator.click({ timeout: 10_000 });
   await locator.press('ControlOrMeta+a');
   await locator.press('Backspace');
-  await locator.pressSequentially(text, { delay: typingDelayMilliseconds });
+  await locator.pressSequentially(text, {
+    delay: typingDelayMilliseconds,
+    timeout: minimumTypingTimeoutMilliseconds + text.length * typingTimeoutPerCharacterMilliseconds
+  });
 }
 
 async function hasValue(locator: Locator, text: string): Promise<boolean> {
