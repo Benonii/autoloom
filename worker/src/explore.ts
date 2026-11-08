@@ -88,7 +88,7 @@ export async function explore(
       const selector = await resolveDurableSelector(page, element);
       const value =
         decision.action === 'type'
-          ? decision.valueSource === 'text'
+          ? decision.valueSource === 'text' || !credentials
             ? decision.text
             : `{{${decision.valueSource}}}`
           : undefined;

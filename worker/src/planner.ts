@@ -65,7 +65,7 @@ export async function decideNextStep(input: PlannerInput): Promise<PlannerDecisi
     input.hint ? `Hint from the user: ${input.hint}` : '',
     input.hasCredentials
       ? 'A test login is available: use valueSource email and password on a sign in form.'
-      : 'No login is available.',
+      : 'No saved login is available: always use valueSource text, and type any email or password the goal gives.',
     `Page: ${input.pageTitle} (${input.pageURL})`,
     `Steps taken:\n${takenList}`,
     input.lastError ? `Your last action failed: ${input.lastError}. Pick a different element or approach.` : '',
